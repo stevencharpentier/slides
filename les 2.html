@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>IT&IMT - Welkom bij C++ programmeren</title>
+
+		<meta name="description" content="IT&IMT - C++ programmeren">
+		<meta name="author" content="Steven Charpentier">
+
+		<meta name="apple-mobile-web-app-capable" content="no">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/dracula.css" id="theme">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+	</head>
+
+	<body>
+
+		<div class="reveal">
+            <div class="slides">
+    <section data-markdown>
+  <script type="text/template">
+
+## IDE en debuggen
+---
+### IDE - **Integrated Development Environment**
+Wij gebruiken Clion.
+
+*waarom?*
+
+- Cross-platform
+- geen amerikaans bedrijf
+- goede ondersteuning voor C++
+---
+### Toolchain
+ 
+ wij gebruiken MinWG
+- builder: *ninja*
+- compiler: *g++*
+- debugger: *gdb*
+ 
+---
+## CMAKE
+
+Instructielijst voor een project in CLion
+---
+## CMakeLists.txt
+een standaard bestand
+
+```cmake
+cmake_minimum_required(VERSION 3.28)
+project(MijnEersteProject)
+
+set(CMAKE_CXX_STANDARD 23)
+
+add_executable(MijnEersteProject main.cpp)
+```
+
+---
+## CMakeLists.txt
+variabelen en parameters
+```cmake
+# Definieer de projectnaam één keer
+set(MY_PROJECT_NAME "MijnEersteProject")
+
+project(${MY_PROJECT_NAME})
+
+# Gebruik de variabele bij het maken van de executable
+add_executable(${MY_PROJECT_NAME} main.cpp)
+```
+
+---
+## Debuggen
+ **Debuggen** is het proces van het identificeren en oplossen van fouten in je code.
+
+
+ **breakpoints** zijn punten in je code waar de uitvoering tijdelijk stopt, zodat je de staat van het programma kunt inspecteren
+---
+## Debuggen in CLion
+gebruik de kever om je programma in debug te starten
+- stap naar het eerste breakpoint
+- *step over* om de volgende regel code uit te voeren
+- *step into* om een functie binnen te gaan
+- *step out* naar de functie die deze aanriep
+---
+
+---
+---
+---
+---
+## een nieuw project aanmaken in CLion
+    demo
+
+  </script>
+</section>
+</div></div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/zoom/zoom.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/search/search.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script>
+
+			// Also available as an ES module, see:
+			// https://revealjs.com/initialization/
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				center: true,
+				hash: true,
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealZoom, RevealNotes, RevealSearch, RevealMarkdown, RevealHighlight ]
+			});
+
+		</script>
+</body>
+
+</Html>
+
