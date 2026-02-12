@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>IT&IMT - Welkom bij C++ programmeren</title>
+
+		<meta name="description" content="IT&IMT - C++ programmeren">
+		<meta name="author" content="Steven Charpentier">
+
+		<meta name="apple-mobile-web-app-capable" content="no">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/dracula.css" id="theme">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+	</head>
+
+	<body>
+
+		<div class="reveal">
+            <div class="slides">
+    <section data-markdown>
+  <script type="text/template">
+# C++ programmeren
+## Bestandsstructuur
+---
+
+
+### Structuur en Modulair Programmeren
+Headers en Source Files
+
+---
+## Waarom splitsen?
+
+- **Overzicht**: Interface vs Implementatie
+- **Compilatiesnelheid**: Alleen gewijzigde files compileren
+- **Herbruikbaarheid**: Code delen via headers
+
+---
+## Bestandsstructuur in C++
+
+- **Header files** (`.h` of `.hpp`)
+  - Declaraties (Het "visitekaartje")
+- **Source files** (`.cpp`)
+  - Implementatie (De logica)
+
+---
+## De Header File
+
+**Bestand: `WiskundeUtils.h`**
+```cpp
+#ifndef WISKUNDEUTILS_H
+#define WISKUNDEUTILS_H
+
+    // Declaratie van methodes
+    int Optellen(int a, int b);
+    int Aftrekken(int a, int b);
+    int Vermenigvuldigen(int a, int b);
+    float Delen(int a, int b);
+    int Kwadraat(int a);
+
+#endif
+```
+
+---
+## Header Guards
+
+Voorkomt dubbele declaraties bij multiple includes.
+
+- `#ifndef NAAM_H`: If Not Defined
+- `#define NAAM_H`: Defineer nu
+- `#endif`: Einde check
+
+---
+## Modern Alternatief
+
+`#pragma once`
+
+Doet hetzelfde, maar korter.
+
+```cpp
+#pragma once
+
+int Optellen(int a, int b);
+// ...
+```
+
+---
+## De Source File
+
+**Bestand: `WiskundeUtils.cpp`**
+
+Vergeet de include niet!
+
+```cpp
+#include "WiskundeUtils.h"
+
+// Implementatie
+int Optellen(int a, int b) {
+    return a + b;
+}
+// ... overige implementaties
+```
+
+---
+## Gebruik in Main
+
+**Bestand: `main.cpp`**
+
+```cpp
+
+#include "WiskundeUtils.h"
+
+int main() {
+    int som = Optellen(5, 3);
+    std::cout << "De som is: " << som << std::endl;
+    return 0;
+}
+```
+
+---
+## CMake aanpassen
+
+Nieuwe `.cpp` bestanden moeten in `CMakeLists.txt`.
+
+```cmake
+# Voeg zowel main.cpp als WiskundeUtils.cpp toe
+add_executable(MijnProject 
+    main.cpp 
+    WiskundeUtils.cpp
+)
+```
+
+> `.h` files hoeven hier niet bij.
+
+---
+## een nieuw project aanmaken in CLion
+    demo
+
+  </script>
+</section>
+</div></div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/zoom/zoom.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/search/search.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script>
+
+			// Also available as an ES module, see:
+			// https://revealjs.com/initialization/
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				center: true,
+				hash: true,
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealZoom, RevealNotes, RevealSearch, RevealMarkdown, RevealHighlight ]
+			});
+
+		</script>
+</body>
+
+</Html>
