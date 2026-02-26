@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>IT&IMT - Welkom bij C++ programmeren</title>
+
+		<meta name="description" content="IT&IMT - C++ programmeren">
+		<meta name="author" content="Steven Charpentier">
+
+		<meta name="apple-mobile-web-app-capable" content="no">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/dracula.css" id="theme">
+		
+		<!--
+		
+		<link rel="stylesheet" href="APstyle.css">
+		<link rel="stylesheet" href="plugin/highlight/github-dark.css">
+		
+		-->
+<link rel="stylesheet" href="plugin/highlight/monokai.css">
+
+	</head>
+
+	<body>
+		<div class="reveal">
+            <div class="slides">
+    <section data-markdown>
+  <script type="text/template">
+
+
+# 🎓 C++: Geheugenbeheer in C++
+
+
+
+---
+
+## Van Garbage Collection naar Volledige Controle
+
+### **C# vs. C++** 
+* in C# ruimt de *Garbage Collector* automatisch op.
+* in C++  heb jij de volledige controle én de volledige **verantwoordelijkheid**.
+
+
+---
+
+**De Kracht:** Efficiëntie en snelheid.
+**De Uitdaging:** Voorkomen van crashes en geheugenlekken.
+
+---
+
+## De Stack (Stapel)
+
+* **Werking:** Vergelijkbaar met een stapel borden.
+* **Automatisch:** Variabelen worden bovenop de stack gezet bij een functie-aanroep en eraf gehaald bij het einde (`}`).
+* **Gebruik:**
+	* Primitieve types (`int`, `bool`, `double`).
+	* Kleine objecten met een korte levensduur.
+
+* **Efficiëntie:** Geen overhead, hardware-ondersteund.
+
+
+
+---
+
+## De Heap (Hoop)
+
+* **Werking:** Een grote poel van vrij beschikbaar geheugen.
+* **Flexibiliteit:** Data blijft tot je expliciet zegt dat het weg mag.
+* **Verantwoordelijkheid:** 
+	* Aanvragen met `new`.
+	* Vrijgeven met `delete`.
+* **Gebruik:**
+	* Grote objecten.
+	* Data die functies moet "overleven".
+
+
+
+---
+
+## Raw Pointers: De Sleutels
+
+Een **pointer** (`*`) is een variabele die een **geheugenadres** bevat.
+
+* Hij "wijst" meestal naar een plek op de heap.
+* De pointer zelf staat vaak op de stack!
+
+```cpp
+// Maak een object op de HEAP
+Speler* spelerPtr = new Speler(); 
+
+// Doe iets met de speler...
+
+// ESSENTIEEL: Handmatig opruimen
+delete spelerPtr; 
+
+```
+
+---
+
+## De Gevaren van Handmatig Beheer
+
+1. **Memory Leaks:** Je vergeet `delete`. Het geheugen blijft "bezet" tot het programma (of de PC) vastloopt.
+2. **Dangling Pointers:** Je gebruikt een pointer nadat je `delete` hebt aangeroepen. De pointer wijst naar "vies" geheugen.
+
+> "With great power comes great responsibility."
+
+---
+
+## RAII
+
+### Resource Acquisition Is Initialization
+
+* **Het Concept:** Koppel het beheer van geheugen aan de levensduur van een stack-object.
+* **Hoe?**
+1. **Constructor:** Vraag geheugen aan.
+2. **Destructor:** Geef geheugen vrij.
+
+
+* **Resultaat:** Omdat de stack automatisch opruimt, wordt je heap-geheugen ook gegarandeerd opgeruimd.
+
+---
+
+## Smart Pointers (Modern C++)
+
+Gebruik in modern C++ (bijna) nooit meer `new` of `delete`. Gebruik de `<memory>` library.
+
+### De drie smaken:
+
+1. `std::unique_ptr`
+2. `std::shared_ptr`
+3. `std::weak_ptr`
+
+---
+
+## Smart Pointers (Modern C++)
+### std::unique_ptr
+
+* **Eigenaarschap:** Er is maar **één** eigenaar.
+* **Kopiëren:** Niet mogelijk, wel verplaatsen (`std::move`).
+* **Efficiëntie:** Geen extra kosten t.o.v. een raw pointer.
+
+```cpp
+void doeIets() {
+    auto speler = std::make_unique<Speler>();
+    // Gebruik 'speler' als een normale pointer
+} // Wordt hier AUTOMATISCH verwijderd!
+
+```
+
+---
+## Smart Pointers (Modern C++)
+### std::shared_ptr & weak_ptr
+
+* **std::shared_ptr:** * Meerdere pointers naar hetzelfde object.
+* Houdt een teller bij (*Reference Counting*).
+* Verwijdert het object pas als de laatste pointer weg is.
+
+
+* **std::weak_ptr:**
+* Kijkt mee naar een `shared_ptr` zonder de teller te verhogen.
+* Voorkomt "cyclische referenties" (geheugenlekken door cirkels).
+
+
+
+---
+## Stack vs. Heap: Een Overzicht
+
+Elk programma verdeelt data over twee gebieden:
+
+| Kenmerk | De Stack (Stapel) | De Heap (Hoop) |
+| --- | --- | --- |
+| **Structuur** | Georganiseerd (LIFO) | Ongestructureerd |
+| **Snelheid** | Zeer snel | Iets trager |
+| **Grootte** | Beperkt (Stack Overflow!) | Zeer groot |
+| **Beheer** | Automatisch (Scope `{}`) | Handmatig (`new`/`delete`) |
+
+---
+
+## Conclusie & Best Practices
+
+1. **Stack Eerst:** Gebruik de stack tenzij het echt niet anders kan.
+2. **Unique als Standaard:** Gebruik `std::unique_ptr` voor heap-objecten.
+3. **Shared als Uitzondering:** Alleen als meerdere objecten echt eigenaar moeten zijn.
+4. **Geen Raw Pointers:** Vermijd `new` en `delete` in je dagelijkse code.
+
+
+  </script>
+</section>
+</div></div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/zoom/zoom.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/search/search.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script>
+
+			// Also available as an ES module, see:
+			// https://revealjs.com/initialization/
+			Reveal.initialize({
+				width: 1200,
+				controls: true,
+				progress: true,
+				center: true,
+				hash: true,
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealZoom, RevealNotes, RevealSearch, RevealMarkdown, RevealHighlight ]
+			});
+
+		</script>
+</body>
+
+</Html>

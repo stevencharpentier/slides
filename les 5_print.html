@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>IT&IMT - Welkom bij C++ programmeren</title>
+
+		<meta name="description" content="IT&IMT - C++ programmeren">
+		<meta name="author" content="Steven Charpentier">
+
+		<meta name="apple-mobile-web-app-capable" content="no">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/dracula.css" id="theme">
+		
+		
+		<link rel="stylesheet" href="APstyle.css">
+		<link rel="stylesheet" href="plugin/highlight/humanoid-light.css">
+
+
+
+
+	</head>
+
+	<body>
+		<div class="reveal">
+            <div class="slides">
+    <section data-markdown>
+  <script type="text/template">
+
+
+# 🎓 C++: Objecten, Pointers & Syntax
+
+## Waarom de `.` en wanneer de `->`?
+
+---
+
+### De Wereld van C++ vs. C#
+
+* **In C#:** Bijna alles is een *referentie*. Je gebruikt bijna altijd de punt (`.`).
+* **In C++:** Jij bepaalt de locatie in het geheugen.
+
+---
+
+### De Geheugen-Regel in C++
+
+* **Stack** 
+* **Heap**
+
+> **De regel:** De locatie bepaalt je gereedschap.
+
+---
+## Stack
+Je hebt het object zelf vast.
+
+![stack](takestack.png)
+---
+
+### De Stack & De Punt (`.`)
+
+Gebruik de punt-notatie als de variabele de **data zelf** bevat.
+
+* **Type:** Vaak gebruikt voor `structs` (data-containers).
+* **Kenmerk:** Snel, veilig, automatisch opgeruimd.
+
+```cpp
+struct Punt {
+    int x, y;
+};
+
+int main() {
+Punt p;      // Direct op de stack
+p.x = 10;    // Je zit direct 'in' de doos
+}
+
+```
+
+---
+## Heap
+Je hebt een adres (pointer) naar het object vast.
+
+![heap](takeheap.png)
+
+
+---
+
+### De Heap & De Pijl (`->`)
+
+Gebruik de pijl-notatie als de variabele een **adres** (pointer) is.
+
+* **Concept:** De pijl is een afkorting.
+* `ptr->Rijd()` is hetzelfde als `(*ptr).Rijd()`.
+* **Logica:** "Ga naar het adres en voer de actie uit."
+
+```cpp
+Voertuig* v = new Voertuig();
+v->Rijd();   // "Volg de pijl naar het object"
+
+delete v;    // Handmatig opruimen!
+
+```
+
+---
+
+### 4. Waarom niet alles op de Stack?
+
+* **beperkte grootte** 
+* **levensduur**
+* **slicing**
+
+---
+## beperkte grootte
+* De stack heeft een beperkte grootte (meestal enkele MB's).
+* Grote objecten of veel objecten kunnen een `stack overflow` veroorzaken.
+
+---
+
+## levensduur
+* Objecten op de stack bestaan alleen binnen de scope van hun functie.
+* Zodra de functie eindigt, worden ze automatisch opgeruimd.
+* Heap-objecten blijven bestaan totdat je ze handmatig opruimt (met `delete` of smart pointers).
+
+---
+
+## slicing
+
+**Het gevaar: Object Slicing** 🔪
+
+Als we klasses met overerving (polymorfisme) op de stack kopiëren naar een base-type.
+
+>❗opgelet, c++ laat dit gewoon toe.
+---
+
+## slicing
+
+**Het gevaar: Object Slicing** 🔪
+* C++ "snijdt" de extra data van de child-class weg.
+* Je verliest je specifieke gedrag (bijv. de `Auto` gedraagt zich als een saai `Voertuig`).
+
+> **Oplossing:** Gebruik pointers op de heap om de volledige "identiteit" van het object te bewaren.
+
+---
+
+### 5. De Moderne Hybride: Smart Pointers
+
+In modern C++ gebruiken we `std::unique_ptr` of `std::shared_ptr`.
+Dit zijn **objecten** die een **pointer** beheren.
+
+* **De Pijl (`->`):** Praat tegen de **inhoud** (jouw klasse).
+* **De Punt (`.`):** Praat tegen de **beheerder** (de smart pointer zelf).
+
+```cpp
+auto v = std::make_unique<Auto>();
+
+v->Rijd();     // Inhoud: De Auto rijdt.
+v.reset();     // Beheerder: Vernietig de Auto nu.
+
+```
+
+---
+
+### 6. Samenvatting Syntax-keuze
+
+| Wat heb je vast? | Locatie | Operator |
+| --- | --- | --- |
+| De "Doos" (Waarde) | Stack | `.` (Punt) |
+| De "Afstandsbediening" (Pointer) | Heap | `->` (Pijl) |
+| De "Slimme Beheerder" | Stack | `->` (Data) / `.` (Tools) |
+
+---
+
+### 7. Checklist
+
+1. Is het een simpel data-object? **Stack + Punt**.
+2. Is het een complexe klasse met overerving? **Heap + Pijl**.
+3. Ziet de variabele eruit als `Type*` of `unique_ptr`? **Gebruik de Pijl**.
+4. Wil je een functie van de *smart pointer* zelf gebruiken? **Gebruik de Punt**.
+
+---
+
+  </script>
+</section>
+</div></div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/zoom/zoom.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/search/search.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script>
+
+			// Also available as an ES module, see:
+			// https://revealjs.com/initialization/
+			Reveal.initialize({
+				width: 1200,
+				controls: true,
+				progress: true,
+				center: true,
+				hash: true,
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealZoom, RevealNotes, RevealSearch, RevealMarkdown, RevealHighlight ]
+			});
+
+		</script>
+</body>
+
+</Html>

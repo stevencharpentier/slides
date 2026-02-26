@@ -1,0 +1,54 @@
+:root {
+
+  --r-background-color: #fff;
+  --r-main-font: -apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui, helvetica neue, helvetica, Cantarell, Ubuntu, roboto, noto, arial, sans-serif;
+  --r-main-font-size: 40px;
+  --r-main-color: #000;
+  --r-block-margin: 20px;
+  --r-heading-margin: 0 0 20px 0;
+  --r-heading-font: League Gothic, Impact, sans-serif;
+  --r-heading-color: #97000C;
+  --r-heading-HIGH-color: #C40009;
+  --r-heading-line-height: 1.2;
+  --r-heading-letter-spacing: normal;
+  --r-heading-text-transform: none;
+  --r-heading-text-shadow: none;
+  --r-heading-font-weight: normal;
+  --r-heading1-text-shadow: none;
+  --r-heading1-size: 3.77em;
+  --r-heading2-size: 2.11em;
+  --r-heading3-size: 1.55em;
+  --r-heading4-size: 1em;
+  --r-code-font: monospace;
+  --r-link-color: #97000C;
+  --r-link-color-dark: rgb(0, 0, 118.15);
+  --r-link-color-hover: rgb(0, 0, 213.2);
+  --r-selection-background-color: rgba(0, 0, 0, 0.99);
+  --r-selection-color: #fff;
+  --r-overlay-element-bg-color: 240, 240, 240;
+  --r-overlay-element-fg-color: 0, 0, 0;
+}
+.reveal h1 {
+  font-size: var(--r-heading1-size);
+  color: var(--r-heading-HIGH-color);
+}
+
+.reveal blockquote {
+  display: block;
+  position: relative;
+  width: 70%;
+  margin: var(--r-block-margin) auto;
+  padding: 5px;
+  font-style: italic;
+  background: rgba(0, 0, 0, 0.15);
+  box-shadow: 10px 10px 20px rgba(0, 0, 0, 0.8);
+}
+:root {
+  --r-bold-color: #97000C;
+  --r-italic-color: #68676C;
+  --r-inline-code-color: #C40009;
+  --r-list-bullet-color: #97000C;
+}
+.reveal code {
+  color: var(--r-italic-color);
+}
