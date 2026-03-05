@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>IT&IMT - Welkom bij C++ programmeren</title>
+
+		<meta name="description" content="IT&IMT - C++ programmeren">
+		<meta name="author" content="Steven Charpentier">
+
+		<meta name="apple-mobile-web-app-capable" content="no">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/dracula.css" id="theme">
+		
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+		<!--
+		
+		<link rel="stylesheet" href="APstyle.css"> 
+
+		<link rel="stylesheet" href="plugin/highlight/github-dark.css">
+
+		-->
+
+
+	</head>
+
+	<body>
+		<div class="reveal">
+            <div class="slides">
+    <section data-markdown>
+  <script type="text/template">
+
+
+# 🎓 C++: Structs en Klasses
+
+In C++ maken we een cruciaal onderscheid tussen **het idee** van iets en **het ding** zelf.
+
+---
+
+## Het Recept: De Struct en de Class
+
+Een `struct` of een `class` is een **voorschrift**.
+
+Het vertelt de computer: *"Als ik je straks vraag om een 'Auto' te maken, zorg dan dat hij deze eigenschappen en functies heeft."*
+
+---
+
+### Het subtiele verschil
+
+* **`struct` (Data-gericht):** Gebruik dit voor een simpele verzameling data. Alles is standaard **public**.
+* **`class` (Object-gericht):** Gebruik dit voor complexe objecten. Alles is standaard **private**.
+
+> **De Gouden Regel:** Gebruik een `struct` als het alleen om data gaat. Gebruik een `class` als het object ook regels heeft (logica).
+
+---
+
+## De Bereiding: Het Object (De Instance)
+
+Zodra je het recept gaat gebruiken, maak je een **object** aan (**instantiëren**).
+
+* **Op de Stack:** `Auto mijnAuto;` (Snel, wordt vanzelf opgeruimd).
+* **Op de Heap:** `Auto* mijnAuto = new Auto();` (Blijft bestaan tot jij `delete` zegt).
+
+---
+
+## De Keukenkast: Namespaces
+
+Om naamconflicten te voorkomen, gebruiken we **Namespaces**.
+
+```cpp
+namespace BakkerijAntwerpen {
+    class Taart { /* ... */ };
+}
+
+namespace BakkerijBrussel {
+    class Taart { /* ... */ };
+}
+```
+
+Gebruik de **scope resolution operator (`::`)**:
+`BakkerijAntwerpen::Taart mijnGebakje;`
+
+---
+
+## Member Functions
+
+Een **member function** (of methode) is een functie die bij een `struct` of `class` hoort.
+
+### Declaratie en Definitie
+
+* **Declaratie:** In de header (`.h`). De belofte.
+* **Definitie:** In de source (`.cpp`). De uitwerking.
+
+---
+
+### Waarom buiten de klasse definiëren?
+
+1. **Overzicht:** De header blijft kort en leesbaar.
+2. **Compilatietijd:** Minder hercompileren bij wijzigingen.
+3. **Circulaire afhankelijkheden:** Voorkomt "kip-ei" problemen.
+
+---
+
+### Code Voorbeeld
+
+**Bestand: `Speler.h`**
+
+```cpp
+class Speler {
+public:
+    int health = 100;
+
+    // Alleen declaratie (de belofte)
+    void NeemSchade(int schade);
+    void Spring();
+};
+```
+
+---
+
+### Code Voorbeeld
+
+**Bestand: `Speler.cpp`**
+
+```cpp
+#include "Speler.h"
+#include <iostream>
+
+// Definitie buiten de class (de uitwerking)
+void Speler::NeemSchade(int schade) {
+    health -= schade;
+}
+
+void Speler::Spring() {
+    std::cout << "De speler springt!" << std::endl;
+}
+```
+
+---
+
+### Gebruik van Member Functions
+
+```cpp
+int main() {
+    // 1. Op de stack (Punt-notatie)
+    Speler stackSpeler;
+    stackSpeler.NeemSchade(20);
+
+    // 2. Op de heap via een pointer (Pijl-notatie)
+    auto heapSpeler = std::make_unique<Speler>();
+    heapSpeler->Spring();
+
+    return 0;
+}
+```
+
+> **Het `this` keyword:** Binnen een member function is `this` een pointer naar het huidige object.
+
+---
+
+## Speciale Member Functions
+
+**Constructor** en **Destructor**.
+
+* Automatisch aangeroepen.
+* Geen return-type.
+* Zelfde naam als de klasse.
+
+---
+
+### De Constructor: De Geboorte
+
+Aangeroepen bij creatie. Ideaal voor initialisatie.
+
+* **Default Constructor:** Zonder parameters.
+* **Parameterized Constructor:** Met parameters.
+
+---
+
+### Code Voorbeeld
+
+**Bestand: `Vijand.h`**
+```cpp
+class Vijand {
+public:
+    int hp;
+    std::string naam;
+    // Constructor declaratie
+    Vijand(std::string n, int h);
+};
+```
+
+**Bestand: `Vijand.cpp`**
+```cpp
+// Gebruik van een Initializer List
+Vijand::Vijand(std::string n, int h) : naam(n), hp(h) {
+    std::cout << naam << " is verschenen!" << std::endl;
+}
+```
+
+---
+
+### De Initializer List
+
+`Constructor(...) : variabele(waarde), ... { }`
+
+**Waarom?**
+1. **Efficiëntie:** Directe initialisatie.
+2. **Verplichting:** initialisatie voor sommige types variabele.
+3. **Duidelijkheid:** Scheidt configuratie van logica.
+
+---
+
+### Constructor Delegation
+
+Eén constructor roept een andere aan.
+
+```cpp
+class Speler {
+public:
+    int health;
+    std::string naam;
+
+    // De "hoofd" constructor
+    Speler(std::string n, int h) : naam(n), health(h) {
+        std::cout << "Volledige initialisatie" << std::endl;
+    }
+
+    // Delegating constructor
+    Speler(std::string n) : Speler(n, 100) {
+        std::cout << "Standaard health toegewezen." << std::endl;
+    }
+};
+```
+
+---
+
+### De Destructor: Het Afscheid (`~`)
+
+Aangeroepen bij verwijdering (einde scope of `delete`).
+
+**Doel:** Opruimen van resources (geheugen, bestanden).
+
+```cpp
+// Destructor definitie
+Vijand::~Vijand() {
+    std::cout << naam << " is opgeruimd." << std::endl;
+}
+```
+
+---
+
+  </script>
+</section>
+</div></div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/zoom/zoom.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/search/search.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script>
+
+			// Also available as an ES module, see:
+			// https://revealjs.com/initialization/
+			Reveal.initialize({
+				width: 1200,
+				controls: true,
+				progress: true,
+				center: true,
+				hash: true,
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealZoom, RevealNotes, RevealSearch, RevealMarkdown, RevealHighlight ]
+			});
+
+		</script>
+</body>
+
+</Html>

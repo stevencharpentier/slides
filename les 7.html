@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>IT&IMT - Welkom bij C++ programmeren</title>
+
+		<meta name="description" content="IT&IMT - C++ programmeren">
+		<meta name="author" content="Steven Charpentier">
+
+		<meta name="apple-mobile-web-app-capable" content="no">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/dracula.css" id="theme">
+		
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+		<!--
+		
+		<link rel="stylesheet" href="APstyle.css"> 
+
+		<link rel="stylesheet" href="plugin/highlight/github-dark.css">
+
+		-->
+
+
+	</head>
+
+	<body>
+		<div class="reveal">
+            <div class="slides">
+    <section data-markdown>
+  <script type="text/template">
+# Zichtbaarheid (Access Modifiers)
+
+In C++ draait alles om controle.
+
+**Encapsulatie** (inkapseling): we verbergen de interne werking van een object voor de buitenwereld om fouten te voorkomen.
+
+---
+
+## De Drie Access Modifiers
+
+C++ kent drie hoofdniveaus van toegang.
+
+Je plaatst deze labels gevolgd door een dubbele punt in je klasse-definitie.
+
+---
+
+### `public` (Iedereen mag erbij)
+
+* Leden zijn overal toegankelijk.
+* De "interface" van je klasse.
+
+> **Let op:** In een `struct` zijn alle leden standaard `public`.
+
+---
+
+### `private` (Alleen voor intern gebruik)
+
+* **Standaard** voor een `class`.
+* Alleen toegankelijk binnen dezelfde klasse.
+* Ideale plek voor data (variabelen).
+
+---
+
+### `protected` (Voor de familie)
+
+* Lijkt op `private`.
+* **Afgeleide klasses** (kinderen) hebben wel toegang.
+* Essentieel voor **overerving**.
+
+---
+
+## In de Praktijk: Getters en Setters
+
+Variabelen **private** maken en toegang regelen via **public** methoden.
+
+* **Getters:** Waarde lezen.
+* **Setters:** Waarde aanpassen.
+
+---
+
+### Waarom deze extra stap?
+
+1. **Validatie:** Controleren of een waarde geldig is.
+2. **Read-only:** Alleen lezen toestaan.
+3. **Flexibiliteit:** Interne werking aanpassen zonder externe code te breken.
+
+---
+
+### Code Voorbeeld
+
+```cpp
+class BankAccount {
+private:
+    double saldo = 0.0; // Niemand mag direct aan het geld zitten
+
+public:
+    // Getter: Veilig het saldo opvragen
+    double GetSaldo() const {
+        return saldo;
+    }
+
+    // Setter: Met controle (validatie)
+    void StortGeld(double bedrag) {
+        if (bedrag > 0) {
+            saldo += bedrag;
+            std::cout << "Storting geslaagd!" << std::endl;
+        } else {
+            std::cout << "Ongeldig bedrag!" << std::endl;
+        }
+    }
+};
+```
+
+---
+
+### Gebruik
+
+```cpp
+int main() {
+    BankAccount mijnRekening;
+    
+    // mijnRekening.saldo = 1000000; // FOUT: saldo is private!
+    
+    mijnRekening.StortGeld(50.0);    // GOED: via de public interface
+    std::cout << "Saldo: " << mijnRekening.GetSaldo() << std::endl;
+    
+    return 0;
+}
+```
+
+---
+
+## Het `friend` Keyword
+
+Soms moet een externe functie toegang hebben tot `private` leden.
+
+Door een functie of klasse als `friend` te declareren, geef je volledige toegang.
+
+---
+
+### Waarom `friend` gebruiken?
+
+* **Operator Overloading:** Bijv. `<<` voor `std::cout` (later meer).
+* **Nauw verbonden klasses:** Bijv. `Motor` en `Versnellingsbak`.
+
+---
+
+### Code Voorbeeld
+
+```cpp
+class Speler {
+private:
+    int geheimeCode = 1234;
+
+    // We geven de functie 'ToonGeheim' toestemming
+    friend void ToonGeheim(const Speler& s);
+};
+
+void ToonGeheim(const Speler& s) {
+    // Hoewel dit een losse functie is, mag hij bij de private data
+    std::cout << "De geheime code is: " << s.geheimeCode << std::endl;
+}
+```
+
+---
+
+> **Waarschuwing:** Gebruik `friend` met mate. Het doorbreekt de inkapseling.
+
+  </script>
+</section>
+</div></div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/zoom/zoom.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/search/search.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script>
+
+			// Also available as an ES module, see:
+			// https://revealjs.com/initialization/
+			Reveal.initialize({
+				width: 1200,
+				controls: true,
+				progress: true,
+				center: true,
+				hash: true,
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealZoom, RevealNotes, RevealSearch, RevealMarkdown, RevealHighlight ]
+			});
+
+		</script>
+</body>
+
+</Html>
