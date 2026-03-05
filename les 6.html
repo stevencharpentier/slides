@@ -255,6 +255,43 @@ Vijand::~Vijand() {
 ```
 
 ---
+## De Uitzondering: Enum Class
+
+Een `enum class` is een speciaal type dat vaak in de header wordt gedefinieerd **zonder** uitwerking in een `.cpp` bestand.
+
+---
+
+### Waarom een Enum Class?
+
+1. **Type-veiligheid:** Je kunt niet per ongeluk een `Kleur` vergelijken met een `Snelheid`.
+2. **Scoped:** De namen (bijv. `Rood`) vervuilen de globale namespace niet.
+3. **Duidelijkheid:** Je ziet direct wat de mogelijke opties zijn.
+
+---
+
+### Code Voorbeeld
+
+```cpp
+// In de header (bijv. GameTypes.h)
+enum class SpelerStatus {
+    Idle,
+    Wandelen,
+    Rennen,
+    Springen
+};
+
+// Gebruik
+SpelerStatus huidigeStatus = SpelerStatus::Idle;
+
+if (huidigeStatus == SpelerStatus::Idle) {
+    // Doe iets...
+}
+```
+
+---
+
+> **De Uitzondering:** Omdat een `enum class` alleen een opsomming van constante waarden is, heeft het geen "logica" die in een source file moet staan.
+
 
   </script>
 </section>
