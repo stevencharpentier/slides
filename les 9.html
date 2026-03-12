@@ -137,8 +137,38 @@ void PrintSpelerNaam(const Speler& s) {
 
 ---
 
-> **Gouden Regel:** Maak elke member function `const` die de staat van het object niet aanpast. [7] Gebruik `const &` voor parameters van complexe types (zoals klasses of strings) om onnodig kopiëren te voorkomen zonder de veiligheid te verliezen.
+> **Gouden Regel:** Maak elke member function `const` die de staat van het object niet aanpast.  Gebruik `const &` voor parameters van complexe types (zoals klasses of strings) om onnodig kopiëren te voorkomen zonder de veiligheid te verliezen.
 
+---
+
+## Het `mutable` Keyword
+
+De uitzondering op `const`.
+
+Soms wil je een variabele aanpassen, zelfs in een `const` member function.
+
+*   **Gebruik:** Voor data die niet bij de "logische staat" van het object hoort (caching, statistieken, mutexes).
+
+---
+
+### `mutable` Voorbeeld
+
+Een `const` getter die toch een interne teller bijwerkt voor statistieken.
+
+```cpp
+class ScoreBoard {
+private:
+    int score = 0;
+    mutable int opvragingenTeller = 0; // Mag veranderen
+public:
+    int GetScore() const {
+        opvragingenTeller++; // OK in een const functie
+        return score;
+    }
+};
+```
+
+> **Gebruik met mate:** `mutable` doorbreekt de `const` garantie.
 
 
   </script>
