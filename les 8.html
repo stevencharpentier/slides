@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>IT&IMT - Welkom bij C++ programmeren</title>
+
+		<meta name="description" content="IT&IMT - C++ programmeren">
+		<meta name="author" content="Steven Charpentier">
+
+		<meta name="apple-mobile-web-app-capable" content="no">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/dracula.css" id="theme">
+		
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+		<!--
+		
+		<link rel="stylesheet" href="APstyle.css"> 
+
+		<link rel="stylesheet" href="plugin/highlight/github-dark.css">
+
+		-->
+
+
+	</head>
+
+	<body>
+		<div class="reveal">
+            <div class="slides">
+    <section data-markdown>
+  <script type="text/template">
+# 🎓 Het `static` Keyword
+
+`static` doorbreekt de regel dat elk object zijn eigen kopie van variabelen krijgt.
+
+---
+
+## Static Members in een Class
+
+Een `static` variabele of functie hoort bij de **klasse zelf**, niet bij een specifiek object.
+
+---
+
+### Static Variabelen
+
+Er bestaat slechts **één kopie** van een static variabele, gedeeld door alle objecten.
+
+**Bestand: `Vijand.h`**
+```cpp
+class Vijand {
+public:
+    static int aantalVijanden; // Declaratie
+
+    Vijand() {
+        aantalVijanden++;
+    }
+    ~Vijand() {
+        aantalVijanden--;
+    }
+};
+```
+
+---
+
+### Definitie Buiten de Klasse
+
+In C++ moet je een static variabele **buiten de klasse definiëren** in een `.cpp` bestand.
+
+**Bestand: `Vijand.cpp`**
+```cpp
+#include "Vijand.h"
+
+// Definitie en initialisatie
+int Vijand::aantalVijanden = 0;
+```
+
+---
+
+### Static Functies
+
+* Kan worden aangeroepen zonder een object.
+* Heeft **geen toegang tot `this`**.
+* Kan alleen andere `static` leden gebruiken.
+
+```cpp
+class GameController {
+private:
+    static int score;
+
+public:
+    static int GetScore() { return score; }
+    static void ResetScore() { score = 0; }
+};
+
+// Definitie in .cpp
+int GameController::score = 0;
+```
+
+---
+
+## Static Variabelen in een Functie
+
+*   **Normale variabele:** Wordt vernietigd als de functie eindigt.
+*   **Static variabele:** Wordt **één keer geïnitialiseerd** en blijft bestaan tot het programma stopt.
+
+---
+
+### Waarom zou je dit gebruiken?
+
+Handig voor een status binnen een functie zonder een globale variabele te gebruiken.
+
+```cpp
+void LogAanroep() {
+    static int teller = 0; // Initialisatie gebeurt maar één keer
+    teller++;
+    std::cout << "Functie is " << teller << " keer uitgevoerd." << std::endl;
+}
+```
+> **Voordeel:** De waarde blijft bestaan, maar is alleen zichtbaar binnen de functie (encapsulatie).
+
+---
+
+## Static in een `.cpp` Bestand
+
+**Internal Linkage**: `static` voor een globale variabele of functie maakt deze **alleen zichtbaar binnen dat ene `.cpp` bestand**.
+
+```cpp
+// Bestand: Speler.cpp
+
+static int berekenInterneSchade(int basis) {
+    // Deze functie kan NIET worden aangeroepen vanuit main.cpp
+    return basis * 2;
+}
+
+void Speler::NeemSchade(int s) {
+    health -= berekenInterneSchade(s);
+}
+```
+
+---
+
+### Modern Alternatief: Anonymous Namespace
+
+Alles in een naamruimte zonder naam is automatisch beperkt tot het huidige bestand.
+
+*   Werkt ook voor klasses en structs.
+*   De moderne C++ standaard.
+
+```cpp
+// Bestand: Physics.cpp
+
+namespace {
+    // Alles hierbinnen is 'private' voor dit bestand
+    const float GRAVITY = 9.81f;
+
+    struct LocalHelper {
+        void DoeIets() {}
+    };
+}
+```
+
+  </script>
+</section>
+</div></div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/zoom/zoom.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/search/search.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script>
+
+			// Also available as an ES module, see:
+			// https://revealjs.com/initialization/
+			Reveal.initialize({
+				width: 1200,
+				controls: true,
+				progress: true,
+				center: true,
+				hash: true,
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealZoom, RevealNotes, RevealSearch, RevealMarkdown, RevealHighlight ]
+			});
+
+		</script>
+</body>
+
+</Html>

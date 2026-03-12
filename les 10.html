@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>IT&IMT - Welkom bij C++ programmeren</title>
+
+		<meta name="description" content="IT&IMT - C++ programmeren">
+		<meta name="author" content="Steven Charpentier">
+
+		<meta name="apple-mobile-web-app-capable" content="no">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/dracula.css" id="theme">
+		
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+		<!--
+		
+		<link rel="stylesheet" href="APstyle.css"> 
+
+		<link rel="stylesheet" href="plugin/highlight/github-dark.css">
+
+		-->
+
+
+	</head>
+
+	<body>
+		<div class="reveal">
+            <div class="slides">
+    <section data-markdown>
+  <script type="text/template">
+# 🎓  Exception Handling
+
+In C++ is exception handling krachtig, maar niet altijd de beste oplossing. Laten we eerst kijken naar lichtere alternatieven.
+
+---
+
+## Alternatieven voor Exceptions
+
+Exceptions hebben een performance "overhead". In snelheidskritische code of bij fatale fouten zijn directere methoden vaak beter.
+
+---
+
+### Error Codes (De C-stijl)
+
+Een functie geeft een speciale waarde terug (bv. `-1`) om een fout aan te geven.
+
+```cpp
+int zoekInLijst(int doel, int lijst[], int grootte) {
+    for (int i = 0; i < grootte; i++) {
+        if (lijst[i] == doel) return i;
+    }
+    return -1; // Error code: niet gevonden
+}
+```
+
+---
+
+### Waarom we Error Codes liever vermijden
+
+1.  **Besmetting:** De `return`-waarde is niet meer puur voor data.
+2.  **Niet-afdwingbaar:** Een programmeur kan de code negeren.
+3.  **Onduidelijkheid:** Wat betekent `-1`? Documentatie is nodig.
+4.  **"If-hell":** Veel herhalende `if`-statements in de call-stack.
+
+---
+
+### Assertions (De Debug-hulp)
+
+Een `assert` controleert een aanname tijdens het ontwikkelen. Als de conditie `false` is, stopt het programma onmiddellijk.
+
+*   **Wanneer:** Voor fouten die *nooit* mogen gebeuren in correcte code.
+*   **Include:** `<cassert>`
+
+```cpp
+#include <cassert>
+
+void verwerkData(int* data) {
+    assert(data != nullptr); // Stopt hier in debug-mode als data nullptr is.
+    // ... verwerking ...
+}
+```
+
+---
+
+### Opgelet bij `assert`
+
+1.  **Verdwijnt in Release:** Wordt volledig verwijderd door de compiler in Release-mode (geen performance-impact).
+2.  **Geen Side-effects:** Plaats nooit noodzakelijke logica in een assert!
+3.  **Niet voor gebruikersfouten:** Niet voor "bestand niet gevonden" of foute input.
+
+---
+
+## 11.2 Wat is een Exception?
+
+Een signaal dat optreedt wanneer de normale flow van de code wordt verstoord. In plaats van een crash, biedt C++ een mechanisme om de fout te "vangen" en te herstellen.
+
+**Proces:** Detectie (`throw`) → Overdracht → Afhandeling (`catch`).
+
+---
+
+## C++ vs. C#: De Verschillen
+
+| Kenmerk | C++ | C# |
+|---|---|---|
+| **Wat werpen?** | **Alles** (int, string, object). | Alleen `System.Exception` of afgeleiden. |
+| **`finally` block** | **Niet nodig.** We gebruiken RAII (destructors). | Essentieel voor resource cleanup. |
+| **Geheugen** | Handmatig beheer (pas op voor leaks). | Garbage Collector. |
+
+---
+
+> **RAII:** Destructors worden gegarandeerd aangeroepen bij een exception, wat `finally` overbodig maakt.
+
+
+---
+
+## De Syntax: Try, Throw en Catch
+
+*   **`try`:** Hier plaats je de code die kan falen.
+*   **`throw`:** Genereert de exception.
+*   **`catch`:** Vangt de fout op en handelt deze af.
+
+---
+
+### Basis Voorbeeld
+
+```cpp
+#include <iostream>
+#include <stdexcept>
+
+double verdeel(double teller, double noemer) {
+    if (noemer == 0) {
+        throw std::runtime_error("Delen door nul is niet toegestaan!"); 
+    }
+    return teller / noemer;
+}
+
+int main() {
+    try {
+        double resultaat = verdeel(10, 0);
+    } 
+    catch (const std::runtime_error& e) {
+        std::cerr << "Fout: " << e.what() << std::endl;
+    }
+    std::cout << "Programma gaat verder..." << std::endl;
+}
+```
+
+---
+
+### De "Catch-All" & `const reference`
+
+**Catch-All:** Vangt *alle* types exceptions. Gebruik spaarzaam.
+```cpp
+catch (...) {
+    std::cout << "Onbekende fout opgetreden.";
+}
+```
+
+**Vang via `const &`:** `catch (const std::exception& e)`
+1.  **Voorkomt Slicing:** Behoudt de specifieke data van afgeleide exceptions.
+2.  **Performance:** Voorkomt een onnodige kopie.
+
+---
+
+## Stack Unwinding & RAII
+
+Wanneer een exception wordt geworpen, worden alle lokale (stack) objecten vernietigd. Hun **destructors** worden gegarandeerd aangeroepen.
+
+Dit is de kracht van **RAII**: resources (geheugen, bestanden) worden automatisch vrijgegeven.
+
+---
+
+### Stack Unwinding Voorbeeld
+
+```cpp
+class Logger {
+public:
+    Logger() { std::cout << "Logger geopend.\n"; }
+    ~Logger() { std::cout << "Logger veilig gesloten!\n"; }
+};
+
+void FunctieB() {
+    Logger log; // Stack object
+    throw std::runtime_error("Fout in B");
+}
+```
+**Output:**
+1. `Logger geopend.`
+2. `Logger veilig gesloten!` (Stack Unwinding in actie)
+
+> **Gouden Regel:** Gooi nooit een exception vanuit een **destructor**!
+
+---
+
+## De Standaard Exceptions
+
+Gebruik de hiërarchie uit `<stdexcept>` voor duidelijke en herkenbare fouten.
+
+*   **`std::logic_error`:** Programmeerfouten.
+    *   `invalid_argument`, `out_of_range`, `length_error`.
+*   **`std::runtime_error`:** Fouten tijdens uitvoering.
+    *   `overflow_error`, `underflow_error`.
+*   **Andere:** `std::bad_alloc` (geheugen), `std::bad_cast`.
+
+---
+
+### Meerdere Catch-blokken
+
+Vang exceptions van specifiek naar algemeen.
+
+```cpp
+try {
+    // ...
+} 
+catch (const std::out_of_range& e) { /* ... */ } 
+catch (const std::runtime_error& e) { /* ... */ } 
+catch (const std::exception& e) { /* Base class */ } 
+catch (...) { /* Catch-all */ }
+```
+
+---
+
+## Custom Objects Werpen
+
+In C++ kun je *elk* type werpen, ook een simpele `struct`. Dit is handig om rijke foutinformatie door te geven.
+
+```cpp
+struct Bom {
+    std::string eigenaarNaam;
+    int schade;
+};
+
+void GooiWapen() {
+    throw Bom{"Bowser", 50}; 
+}
+
+try {
+    GooiWapen();
+} catch (const Bom& b) {
+    std::cout << b.eigenaarNaam << " gooide een bom!";
+}
+```
+
+
+
+
+  </script>
+</section>
+</div></div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/zoom/zoom.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/search/search.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script>
+
+			// Also available as an ES module, see:
+			// https://revealjs.com/initialization/
+			Reveal.initialize({
+				width: 1200,
+				controls: true,
+				progress: true,
+				center: true,
+				hash: true,
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealZoom, RevealNotes, RevealSearch, RevealMarkdown, RevealHighlight ]
+			});
+
+		</script>
+</body>
+
+</Html>

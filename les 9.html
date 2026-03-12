@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>IT&IMT - Welkom bij C++ programmeren</title>
+
+		<meta name="description" content="IT&IMT - C++ programmeren">
+		<meta name="author" content="Steven Charpentier">
+
+		<meta name="apple-mobile-web-app-capable" content="no">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/dracula.css" id="theme">
+		
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+		<!--
+		
+		<link rel="stylesheet" href="APstyle.css"> 
+
+		<link rel="stylesheet" href="plugin/highlight/github-dark.css">
+
+		-->
+
+
+	</head>
+
+	<body>
+		<div class="reveal">
+            <div class="slides">
+    <section data-markdown>
+  <script type="text/template">
+# 🎓  Het `const` Keyword
+
+In C++ is `const` een essentieel contract voor **"const-correctness"**.
+
+---
+
+### Waarom Const-Correctness?
+
+*   **Veiligheid:** Voorkomt onbedoelde wijzigingen (bugs).
+*   **Snelheid:** Betere optimalisatie door de compiler.
+*   **Duidelijkheid:** Documenteert dat een functie "read-only" is.
+
+> ❗ **Garantie:** De compiler dwingt af dat data niet wordt aangepast.
+
+---
+
+## 10.1 Const Variabelen
+
+De meest simpele vorm is een variabele die na initialisatie niet meer aangepast mag worden. [14]
+
+```cpp
+const int MAX_LEVENS = 5;
+// MAX_LEVENS = 10; // FOUT: De compiler weigert dit.
+```
+
+---
+
+## 10.2 Const en Pointers
+
+Bij pointers wordt het interessanter, omdat je twee dingen hebt: de pointer zelf (het adres) en de data waar hij naar wijst.
+
+---
+
+### 1. Pointer naar constante data
+
+Je mag de data niet aanpassen via deze pointer.
+```cpp
+int waarde = 5;
+const int* ptr = &waarde; 
+// *ptr = 10; // FOUT: De data is 'read-only' via deze pointer.
+ptr = nullptr; // OK: De pointer zelf mag wel naar een ander adres wijzen.
+```
+
+---
+
+### 2. Constante pointer
+
+De pointer moet altijd naar hetzelfde adres blijven wijzen.
+
+```cpp
+int waarde = 5;
+int* const ptr = &waarde;
+*ptr = 10; // OK: De data mag veranderen.
+// ptr = nullptr; // FOUT: De pointer zelf is constant.
+```
+
+---
+
+### 3. Constante pointer naar constante data
+
+Niets mag veranderen.
+
+```cpp
+const int* const ptr = &waarde; // Alles is constant
+```
+
+> **Waarom?** Maximale veiligheid: een vaste verwijzing naar een vaste waarde (bijv. hardware-instellingen).
+
+---
+
+## 10.3 Const in Member Functions
+
+Zet `const` **achter** de haakjes. De functie belooft de klasse-data **niet** aan te passen.
+
+```cpp
+class Speler {
+public:
+    int health = 100;
+
+    // Read-only: mag health niet wijzigen
+    int GetHealth() const { return health; }
+
+    // Wijzigt data: mag NIET const zijn
+    void NeemSchade(int s) { health -= s; }
+};
+```
+
+---
+
+## 10.4 Const bij Parameters
+
+Combineer de snelheid van een **reference** (`&`) met de veiligheid van een **waarde**. `const` voorkomt dat de functie het originele object wijzigt.
+
+```cpp
+void PrintSpelerNaam(const Speler& s) {
+    s.NeemSchade(10); // FOUT: wijzigt data
+    std::cout << s.GetHealth(); // OK: is const
+}
+```
+
+---
+
+> **Gouden Regel:** Maak elke member function `const` die de staat van het object niet aanpast. [7] Gebruik `const &` voor parameters van complexe types (zoals klasses of strings) om onnodig kopiëren te voorkomen zonder de veiligheid te verliezen.
+
+
+
+  </script>
+</section>
+</div></div>
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/zoom/zoom.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/search/search.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script>
+
+			// Also available as an ES module, see:
+			// https://revealjs.com/initialization/
+			Reveal.initialize({
+				width: 1200,
+				controls: true,
+				progress: true,
+				center: true,
+				hash: true,
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealZoom, RevealNotes, RevealSearch, RevealMarkdown, RevealHighlight ]
+			});
+
+		</script>
+</body>
+
+</Html>
