@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>IT&IMT - Welkom bij C++ programmeren</title>
+
+		<meta name="description" content="IT&IMT - C++ programmeren">
+		<meta name="author" content="Steven Charpentier">
+
+		<meta name="apple-mobile-web-app-capable" content="no">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/dracula.css" id="theme">
+		
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+		<!--
+		
+		<link rel="stylesheet" href="APstyle.css"> 
+
+		<link rel="stylesheet" href="plugin/highlight/github-dark.css">
+
+		-->
+
+
+	</head>
+
+	<body>
+		<div class="reveal">
+            <div class="slides">
+    <section data-markdown>
+  <script type="text/template">
+# 🎓  Preprocessor Instructies
+
+---
+
+### Wat is de Preprocessor?
+* Een "tekstverwerker" die vóór de compiler langskomt.
+* Scant op regels die beginnen met een **`#`**.
+* Begrijpt **geen** C++ logica; doet alleen tekstmanipulatie.
+* Output: Een uitgebreid tijdelijk bestand voor de compiler.
+
+---
+
+### De "Grote Drie" Instructies
+1. **`#include`**: Plakt inhoud van een ander bestand.
+2. **`#define`**: Vervangt tekstfragmenten (macro's).
+3. **`#if / #ifdef`**: Voorwaardelijke compilatie.
+
+---
+
+## Werken met `#define`
+* Maakt een **macro**: zoek-en-vervang op steroïden.
+
+```cpp
+#define PI 3.14159
+#define MAX_BUFFER_SIZE 1024
+
+float omtrek = 2 * PI * straal; 
+// Wordt: float omtrek = 2 * 3.14159 * straal;
+```
+
+---
+
+### Macro-functies
+* Lijkt op een functie, maar is pure tekstvervanging.
+
+```cpp
+#define KWADRAAT(x) x * x
+
+int resultaat = KWADRAAT(5); // Wordt: 5 * 5
+```
+
+---
+
+## Speciale Operatoren
+* **Stringizing (`#`)**: Zet een parameter om in een string literal (`"tekst"`).
+* **Token Pasting (`##`)**: Plakt twee tokens aan elkaar tot een nieuwe naam.
+
+---
+
+### Stringizing & Pasting in Actie
+```cpp
+#define PRINT_VAR(x) std::cout << #x << " is " << x << std::endl
+#define MAKE_GETSET(Type, Name) \
+    void set_##Name(Type input){ this->Name = input; } \
+    Type const get_##Name() { return Name; }
+
+int score = 100;
+PRINT_VAR(score); // Output: score is 100
+```
+
+---
+
+## De Weg naar Reflectie
+* **Reflectie**: Het inspecteren van de eigen structuur (namen van variabelen, etc.).
+* **De Hack**: Gebruik `#x` om namen tijdens compilatie op te slaan.
+* **C++26**: De komst van de `^` (**reflexpr**) operator. Gedaan met gevaarlijke hacks!
+
+---
+
+## De X-Macro Techniek
+* **Doel**: Eén centrale lijst met data die op meerdere plekken "uitvouwt".
+* Voorkomt synchronisatiefouten tussen enums en strings.
+
+---
+
+### X-Macro Voorbeeld (Data)
+```cpp
+// 1. De centrale lijst
+#define STATUS_LIST \
+    X(Idle)         \
+    X(Running)      \
+    X(Jumping)      \
+    X(Dead)
+
+// 2. Genereer de Enum
+enum class PlayerStatus {
+#define X(name) name,
+    STATUS_LIST
+#undef X
+};
+```
+
+---
+
+### X-Macro Voorbeeld (Logica)
+```cpp
+// 3. Genereer de String-conversie
+std::string StatusToString(PlayerStatus s) {
+    switch (s) {
+#define X(name) case PlayerStatus::name: return #name;
+        STATUS_LIST
+#undef X
+        default: return "Unknown";
+    }
+}
+```
+
+---
+
+## Waarom macro's gevaarlijk zijn
+1. **Geen Type of Scope**: `PI` wordt overal vervangen, wat kan leiden tot vage botsingen.
+2. **Wiskundige Voorrang**: Macro's kennen geen haakjes uit zichzelf.
+
+---
+
+### Het `KWADRAAT` Gevaar
+```cpp
+#define KWADRAAT(x) x * x
+
+int resultaat = KWADRAAT(5 + 1); 
+```
+
+**Verwacht:** $6 \times 6 = 36$  
+**Realiteit:** $5 + 1 \times 5 + 1 = 11$
+
+> **Gouden Regel:** Gebruik `constexpr` voor waarden en `inline` of templates voor functies.
+
+---
+
+## Voorwaardelijke Compilatie
+Code in- of uitschakelen vóórdat de compiler deze ziet.
+
+---
+
+### Debug vs. Release
+```cpp
+void SysteemCheck() {
+#ifdef _DEBUG
+    std::cout << "DEBUG: Voer zware tests uit..." << std::endl;
+#endif
+    std::cout << "Systeem operationeel." << std::endl;
+}
+```
+
+---
+
+### Platform-specifieke Code
+```cpp
+void WisScherm() {
+#ifdef _WIN32
+    system("cls"); // Windows
+#elif defined(__linux__) || defined(__APPLE__)
+    system("clear"); // Unix/Mac
+#endif
+}
+```
+
+---
+
+### De `#if 0` Hack
+* Veilig grote blokken code uitschakelen.
+* Werkt zelfs als de code al `/* comments */` bevat.
+
+```cpp
+#if 0
+    void OudeFunctie() {
+        // Deze code bestaat niet voor de compiler
+    }
+#endif
+```
+
+---
+
+## Pragma Once
+* De moderne vervanger voor Header Guards.
+* Voorkomt dat een bestand vaker dan één keer wordt ingeladen.
+* Ondersteund door vrijwel alle moderne compilers.
+
+```cpp
+#pragma once
+
+class MyClass { 
+    // ...
+};
+```
+```
+
+
+  </script>
+</section>
+</div></div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/zoom/zoom.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/search/search.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script>
+
+			// Also available as an ES module, see:
+			// https://revealjs.com/initialization/
+			Reveal.initialize({
+				width: 1200,
+				controls: true,
+				progress: true,
+				center: true,
+				hash: true,
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealZoom, RevealNotes, RevealSearch, RevealMarkdown, RevealHighlight ]
+			});
+
+		</script>
+</body>
+
+</Html>

@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>IT&IMT - Welkom bij C++ programmeren</title>
+
+		<meta name="description" content="IT&IMT - C++ programmeren">
+		<meta name="author" content="Steven Charpentier">
+
+		<meta name="apple-mobile-web-app-capable" content="no">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/dracula.css" id="theme">
+		
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+		<!--
+		
+		<link rel="stylesheet" href="APstyle.css"> 
+
+		<link rel="stylesheet" href="plugin/highlight/github-dark.css">
+
+		-->
+
+
+	</head>
+
+	<body>
+		<div class="reveal">
+            <div class="slides">
+    <section data-markdown>
+  <script type="text/template">
+# 🎓  Lijsten en Arrays in C++
+
+---
+
+### De Stap van C# naar C++
+* In C# gebruiken we `List<T>` en `Array`.
+* In C++ moeten we dieper onder de motorkap kijken.
+* **Focus:** Geheugenbeheer, Veiligheid en Performance.
+
+---
+
+## 12.1 De Klassieke C-Style Array
+* De basis: een aaneengesloten blok geheugen.
+* **Kenmerken:**
+    * Vaste grootte (moet bekend zijn bij compilatie).
+    * Geen "Bounds Checking" (gevaar voor corruptie!).
+    * **Pointer-decay:** Verval tot een simpele pointer naar het eerste element.
+
+---
+
+### C-Style Array in Code
+```cpp
+int scores[5] = {10, 20, 30, 40, 50}; // Op de stack
+
+// Toegang via index
+scores[0] = 15;
+
+// GEVAAR: C++ controleert dit niet!
+// scores[10] = 100; // Undefined Behavior
+```
+
+---
+
+## 12.2 De Moderne Oplossing: `std::vector`
+* De C++ tegenhanger van de C# `List<T>`.
+* Het is een **dynamische array**.
+* Beheert geheugen op de **heap** via RAII.
+
+---
+
+### Waarom `std::vector`?
+1. **Dynamisch:** Groeit automatisch via `push_back()`.
+2. **RAII:** Ruimt zichzelf op wanneer hij "out-of-scope" gaat.
+3. **Veiligheid:** `.at(index)` biedt volledige bounds checking.
+4. **Zelfbewust:** Kent zijn eigen grootte via `.size()`.
+
+---
+
+### `std::vector` in Actie
+```cpp
+#include <vector>
+
+std::vector<std::string> inventaris = {"Zwaard", "Schild"};
+inventaris.push_back("Magische staf");
+
+std::cout << inventaris.size(); // Output: 3
+
+try {
+    std::cout << inventaris.at(10); // Werpt exception
+} catch (const std::out_of_range& e) {
+    std::cerr << "Fout: " << e.what();
+}
+```
+
+---
+
+## Size vs Capacity
+* **Size:** Hoeveel elementen zitten er *nu* in?
+* **Capacity:** Hoeveel ruimte is er gereserveerd?
+* Vector gebruikt **aaneengesloten geheugen** (cache-vriendelijk).
+
+---
+
+### Wat gebeurt er als de vector "vol" is?
+1. **Nieuwe allocatie:** Een groter blok op de heap wordt aangevraagd.
+2. **Move/Copy:** Oude elementen verhuizen naar het nieuwe blok.
+3. **Vernietigen:** Oude geheugen wordt vrijgegeven.
+4. **Toevoegen:** Nieuwe element wordt geplaatst.
+
+---
+
+### Performance Tip: `reserve()`
+> Het verplaatsen van data is duur!
+
+Gebruik `.reserve(n)` als je vooraf weet hoeveel elementen je ongeveer nodig hebt. Dit voorkomt onnodige verhuizingen.
+
+---
+
+## De Forward List
+* Een **singly linked list**.
+* Elke node heeft een pointer naar de **volgende**.
+* **Voordelen:**
+    * Minimaal geheugenverbruik.
+    * Razendsnel toevoegen aan het begin (`push_front`).
+* **Nadelen:** Geen `.size()`, alleen voorwaarts lopen.
+
+---
+
+## De List
+* Een **doubly linked list**.
+* Pointers naar **volgende** én **vorige** buur.
+* **Voordelen:**
+    * Efficiënt invoegen/verwijderen overal in de lijst.
+    * Tweerichtingsverkeer.
+* **Nadeel:** Geen "Random Access" (je kunt niet springen naar index `[n]`).
+
+---
+
+## De Unordered Map
+* De C++ tegenhanger van C# `Dictionary<TKey, TValue>`.
+* Gebruikt een **Hash Table**.
+* **Snelheid:** Gemiddeld `O(1)` voor zoeken/toevoegen.
+* **Let op:** Geen vaste volgorde van elementen!
+
+---
+
+### `std::unordered_map` voorbeeld
+```cpp
+#include <unordered_map>
+
+std::unordered_map<std::string, int> hp;
+hp["Slayer99"] = 100;
+
+if (hp.find("Slayer99") != hp.end()) {
+    std::cout << "Gevonden!";
+}
+
+for (const auto& [naam, waarde] : hp) {
+    // Willekeurige volgorde!
+}
+```
+
+---
+
+## De Map
+* Een **gesorteerde** sleutelbos.
+* Gebruikt een **Binary Search Tree** (Red-Black Tree).
+* **Kenmerken:**
+    * Altijd gesorteerd op Key.
+    * Iets meer geheugen-overhead dan de unordered variant.
+
+---
+
+
+
+
+  </script>
+</section>
+</div></div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/zoom/zoom.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/search/search.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script>
+
+			// Also available as an ES module, see:
+			// https://revealjs.com/initialization/
+			Reveal.initialize({
+				width: 1200,
+				controls: true,
+				progress: true,
+				center: true,
+				hash: true,
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealZoom, RevealNotes, RevealSearch, RevealMarkdown, RevealHighlight ]
+			});
+
+		</script>
+</body>
+
+</Html>

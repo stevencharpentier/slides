@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>IT&IMT - Welkom bij C++ programmeren</title>
+
+		<meta name="description" content="IT&IMT - C++ programmeren">
+		<meta name="author" content="Steven Charpentier">
+
+		<meta name="apple-mobile-web-app-capable" content="no">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/dracula.css" id="theme">
+		
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+		<!--
+		
+		<link rel="stylesheet" href="APstyle.css"> 
+
+		<link rel="stylesheet" href="plugin/highlight/github-dark.css">
+
+		-->
+
+
+	</head>
+
+	<body>
+		<div class="reveal">
+            <div class="slides">
+    <section data-markdown>
+  <script type="text/template">
+
+# 🎓 Addendum: Les 9
+## Diepere duik in Immutability
+
+---
+
+## 10.5 Mutable: De "Caching" Uitzondering
+
+Soms is een functie *logisch* gezien const (hij verandert de staat van de speler niet), maar moet hij *technisch* toch iets bijwerken.
+
+* **Caching:** Een zware berekening opslaan zodat je die niet telkens opnieuw hoeft te doen.
+* **Statistieken:** Bijhouden hoe vaak een getter wordt aangeroepen.
+
+---
+
+### Mutable & Caching (Voorbeeld)
+
+```cpp
+class Speler {
+private:
+    mutable int schadeCache = -1; // -1 betekent: nog niet berekend
+
+public:
+    int BerekenTotaleSchade() const {
+        if (schadeCache == -1) {
+            schadeCache = 50 * 2; // Zware berekening simulatie
+        }
+        return schadeCache;
+    }
+};
+```
+
+> **Gevaar:** Gebruik `mutable` alleen voor data die de externe werking van het object niet beïnvloedt.
+
+---
+
+## Constexpr: Compile-time Constants
+
+Naast `const` kennen we sinds C++11 ook **`constexpr`**. 
+
+| Keyword | Wanneer bepaald? | Betekenis |
+| :--- | :--- | :--- |
+| **`const`** | Runtime | "Ik beloof dit na aanmaak niet te wijzigen." |
+| **`constexpr`** | **Compile-time** | "Ik weet de waarde al tijdens het compileren." |
+
+---
+
+### Waarom `constexpr`?
+
+1.  **Snelheid:** De CPU hoeft de berekening niet meer uit te voeren tijdens het draaien van het programma.
+2.  **Embedded/Performance:** De waarde wordt direct in de machinecode "gebakken".
+3.  **Garantie:** De compiler dwingt af dat de waarde vooraf berekend *kan* worden.
+
+---
+
+### Constexpr Variabelen
+
+Een `constexpr` variabele is altijd impliciet `const`.
+
+```cpp
+constexpr int MAX_PLAYERS = 10; 
+// De compiler vult overal in je code simpelweg '10' in.
+
+constexpr int TOTAL_SCORE = MAX_PLAYERS * 100; 
+// Ook deze berekening gebeurt tijdens het compileren.
+```
+
+---
+
+### Constexpr Functies
+
+Dit vertelt de compiler: *"Als de input bekend is tijdens het compileren, reken de uitkomst dan nu alvast uit."*
+
+```cpp
+constexpr int berekenSchade(int basis, int mult) {
+    return basis * mult;
+}
+
+int main() {
+    // Gebeurt tijdens compilatie (Resultaat: 150)
+    constexpr int vasteSchade = berekenSchade(50, 3); 
+
+    int input;
+    std::cin >> input;
+    // Input is pas bekend tijdens het draaien: werkt nu als normale functie
+    int variabeleSchade = berekenSchade(input, 3); 
+}
+```
+
+---
+
+### Samenvatting
+
+* **`const`**: Voor variabelen waarvan de waarde pas tijdens het draaien vaststaat (bijv. een gebruikersnaam uit een database).
+* **`constexpr`**: Voor vaste regels, wiskundige constantes of configuraties die nooit veranderen.
+* **`mutable`**: Het "achterdeurtje" voor interne administratie in const functies.
+
+
+
+---
+
+
+  </script>
+</section>
+</div></div>
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/zoom/zoom.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/search/search.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script>
+
+			// Also available as an ES module, see:
+			// https://revealjs.com/initialization/
+			Reveal.initialize({
+				width: 1200,
+				controls: true,
+				progress: true,
+				center: true,
+				hash: true,
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealZoom, RevealNotes, RevealSearch, RevealMarkdown, RevealHighlight ]
+			});
+
+		</script>
+</body>
+
+</Html>
