@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>IT&IMT - Welkom bij C++ programmeren</title>
+
+		<meta name="description" content="IT&IMT - C++ programmeren">
+		<meta name="author" content="Steven Charpentier">
+
+		<meta name="apple-mobile-web-app-capable" content="no">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/dracula.css" id="theme">
+		
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+		<!--
+		
+		<link rel="stylesheet" href="APstyle.css"> 
+
+		<link rel="stylesheet" href="plugin/highlight/github-dark.css">
+
+		-->
+
+
+	</head>
+
+	<body>
+		<div class="reveal">
+            <div class="slides">
+    <section data-markdown>
+  <script type="text/template">
+# 🎓  Polymorfisme
+
+---
+
+Natuurlijk! Hier zijn de slides in Markdown-formaat, geoptimaliseerd voor een hoorcollege. Ik heb de hoofdstuknummering verwijderd en gezorgd voor een heldere, visuele structuur.
+
+---
+
+# Polymorfisme in C++
+## "Veelvormigheid" in Object-Oriented Programming
+
+* **Kernconcept:** Objecten van verschillende types behandelen alsof ze van hetzelfde type zijn.
+* **Mechanisme:** Gebruik van overerving en **Virtual Functions**.
+* **Waarom?** Code schrijven die algemeen is, maar specifiek gedrag vertoont tijdens runtime.
+
+---
+
+# Waarom Polymorfisme?
+
+Stel je een game voor met verschillende vijanden: `Orc`, `Troll` en `Goblin`.
+
+* **Zonder polymorfisme:**
+    * Aparte lijsten voor elk type vijand.
+    * Aparte functies (`valOrcAan`, `valTrollAan`).
+* **Met polymorfisme:**
+    * Eén lijst van `Vijand*`.
+    * Eén aanroep: `vijand->ValAan()`.
+    * C++ regelt de details (Orc slaat, Troll stampt).
+
+---
+
+# De "Is-Een" Relatie (Inheritance)
+
+Overerving modelleert een relatie waarbij een kind-klasse een gespecialiseerde versie is van de ouder-klasse.
+
+```cpp
+class GameEntity {
+public:
+    int health = 100;
+    void NeemSchade(int s) { health -= s; }
+};
+
+// Een Monster IS EEN GameEntity
+class Monster : public GameEntity {
+public:
+    void Brul() { std::cout << "GRAAWRR!"; }
+};
+```
+
+> **Belangrijk:** Gebruik altijd `public` inheritance voor een standaard "is-een" relatie. Zonder `public` wordt alles standaard `private`!
+
+---
+
+# De Constructor-Keten
+
+
+
+Bij het maken van een object moet eerst de fundering worden gelegd:
+1.  **Base Class constructor** wordt eerst uitgevoerd.
+2.  **Derived Class constructor** volgt daarna.
+
+### Parameters doorgeven
+Als de ouder geen default constructor heeft, gebruik je de **initializer list**:
+
+```cpp
+class Monster : public GameEntity {
+public:
+    Monster(std::string n, int k) : GameEntity(n), kracht(k) {
+        // GameEntity(n) wordt eerst aangeroepen
+    }
+};
+```
+
+---
+
+# Virtual Functions: De Magie
+
+Zonder `virtual` gebruikt C++ **static binding** (kijkt naar het type van de pointer, niet het object).
+
+```cpp
+class Vijand {
+public:
+    virtual void ValAan() { std::cout << "Basis aanval"; }
+    virtual ~Vijand() {} // Altijd nodig!
+};
+
+class Orc : public Vijand {
+public:
+    void ValAan() override { std::cout << "Orc slaat!"; }
+};
+```
+
+* `virtual`: Maakt dynamic binding mogelijk.
+* `override`: Extra controle voor de compiler (voorkomt typfouten).
+
+---
+
+# De Virtual Destructor
+### De "Gouden Regel" van C++
+
+Als je een object verwijdert via een base-pointer, moet de destructor `virtual` zijn.
+
+* **Probleem:** Zonder `virtual` wordt alleen de destructor van de `Base` aangeroepen.
+* **Gevolg:** Geheugenlekken (de data in de `Derived` klasse wordt niet opgeruimd).
+
+```cpp
+class Base {
+    virtual ~Base() { /* Veilig voor overerving */ }
+};
+```
+
+---
+
+# Abstract Classes
+
+Sommige klassen zijn te algemeen om een object van te maken (bijv. `Vorm`).
+
+* **Pure Virtual Function:** Declaratie eindigt op `= 0`.
+* **Abstract:** Een klasse met minstens één pure virtual function.
+* **Gevolg:** Je kunt geen instanties maken (`Vorm v;` is verboden).
+
+```cpp
+class Vorm {
+public:
+    virtual double BerekenOppervlakte() const = 0; // Pure virtual
+};
+```
+
+---
+
+# Het Gevaar: Object Slicing
+
+Gebeurt wanneer je een object **by value** doorgeeft in plaats van via een pointer of reference.
+
+
+
+```cpp
+void DoeAanval(Vijand v) { // OEPS: Pass-by-value
+    v.ValAan(); 
+}
+```
+
+* De extra data van de `Orc` wordt letterlijk "weggesneden".
+* Het polymorfe gedrag gaat verloren; alleen de `Base` functies blijven over.
+* **Oplossing:** Gebruik altijd `Vijand*` of `Vijand&`.
+
+---
+
+# Multiple Inheritance & The Diamond Problem
+
+C++ staat toe dat een klasse van meerdere ouders erft.
+
+* **Risico:** Dubbele data als beide ouders dezelfde grootouder hebben.
+* **Oplossing:** `virtual inheritance`.
+
+```cpp
+class Scanner : virtual public Apparaat {};
+class Printer : virtual public Apparaat {};
+class Copieerder : public Scanner, public Printer {};
+```
+
+---
+
+# Onder de motorkap: De VTable
+
+Hoe weet C++ welke functie hij moet kiezen?
+
+1.  Elke klasse met `virtual` functies krijgt een **VTable** (een tabel met functie-pointers).
+2.  Elk object krijgt een onzichtbare pointer (**vptr**) naar die tabel.
+3.  Tijdens runtime volgt C++ de `vptr` naar de juiste tabel en voert de specifieke functie uit.
+
+---
+
+# Praktijkvoorbeeld: Game Loop
+
+
+
+
+  </script>
+</section>
+</div></div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/zoom/zoom.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/search/search.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script>
+
+			// Also available as an ES module, see:
+			// https://revealjs.com/initialization/
+			Reveal.initialize({
+				width: 1200,
+				controls: true,
+				progress: true,
+				center: true,
+				hash: true,
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealZoom, RevealNotes, RevealSearch, RevealMarkdown, RevealHighlight ]
+			});
+
+		</script>
+</body>
+
+</Html>
