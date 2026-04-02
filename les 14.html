@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>IT&IMT - Welkom bij C++ programmeren</title>
+
+		<meta name="description" content="IT&IMT - C++ programmeren">
+		<meta name="author" content="Steven Charpentier">
+
+		<meta name="apple-mobile-web-app-capable" content="no">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/dracula.css" id="theme">
+		
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+		<!--
+		
+		<link rel="stylesheet" href="APstyle.css"> 
+
+		<link rel="stylesheet" href="plugin/highlight/github-dark.css">
+
+		-->
+
+
+	</head>
+
+	<body>
+		<div class="reveal">
+            <div class="slides">
+    <section data-markdown>
+  <script type="text/template">
+# 🎓  Templates
+## Generics in C++
+
+---
+
+## Wat zijn Templates?
+
+* Vergelijkbaar met **Generics** in C# (`List<T>`).
+* Een **blauwdruk** voor functies en klasses.
+* Datatype wordt bepaald op het moment van gebruik.
+* Krachtig hulpmiddel voor **code-hergebruik**.
+
+---
+
+## Functie Templates
+
+Zonder templates (overloading):
+```cpp
+int Max(int a, int b);
+float Max(float a, float b);
+```
+
+Met een **Function Template**:
+```cpp
+template <typename T>
+T Max(const T& a, const T& b) {
+    if (a > b) return a;
+    else return b;
+}
+```
+
+---
+
+## Interne werking: Instantiatie
+
+* Een template is **geen code**, maar een **blauwdruk**.
+* **Instantiatie**: De compiler vervangt `T` door het gekozen type.
+* Genereert een echte functie/klasse in het geheugen.
+* **Resultaat**: Geen runtime overhead, extreem snel.
+
+
+
+---
+
+## Typename vs Class
+
+```cpp
+template <typename T>
+template <class T>
+```
+
+* In deze context **volledig identiek**.
+* `typename` is de huidige standaard.
+* Geeft aan dat `T` elk type kan zijn (ook `int` of `float`).
+
+---
+
+## Concepts (C++20)
+
+* Methode om beperkingen op `T` te leggen.
+* Voorbeeld: *"T moet een getal zijn"*.
+* Voorkomt cryptische foutmeldingen (Error Walls).
+* *Wordt in latere jaren dieper behandeld.*
+
+---
+
+## Klasse Templates
+
+```cpp
+template <typename T>
+class Box {
+private:
+    T inhoud;
+public:
+    Box(const T& waarde) : inhoud(waarde) {}
+    const T& GetInhoud() const { return inhoud; }
+    void SetInhoud(const T& nieuweWaarde) { inhoud = nieuweWaarde; }
+};
+```
+
+---
+
+## Non-type Template Parameters
+
+Waarden meegeven in plaats van types:
+
+```cpp
+template <typename T, int Size>
+class Buffer {
+private:
+    T data[Size];
+public:
+    const T& Lees(int index) const {
+        if (index < 0 || index >= Size) {
+            throw std::out_of_range("Buiten bereik!");
+        }
+        return data[index];
+    }
+};
+```
+* Array wordt op de **stack** geplaatst (sneller).
+
+---
+
+## De .ipp Conventie
+
+* Templates moeten in de **header-file** staan.
+* Implementatie kan niet naar een `.cpp`.
+* **Oplossing**: Logica in een `.ipp` bestand.
+* `#include "Bestand.ipp"` onderaan de header.
+
+---
+
+## De CTAD Valstrik
+
+> "Sinds C++17 kan de compiler soms het type raden, maar doe dit niet. Wees expliciet zodat je weet wat er in het geheugen gebeurt en om vage pointer-fouten te voorkomen."
+
+* Gebruik: `Box<int> b(10);`
+* Vermijd: `Box b(10);`
+
+---
+
+## Template Default Values
+
+Standaardwaarden voor parameters:
+
+```cpp
+// Default type = int
+template <typename T = int>
+class Result;
+
+// Default waarde = 64
+template <typename T = float, int Size = 64>
+class AudioBuffer;
+```
+
+* Aanroep met defaults: `Result<> mijnResultaat(42);`
+
+---
+
+## Template Specialization
+
+Specifieke logica voor één bepaald type (bijv. `const char*`):
+
+```cpp
+// Algemene template
+template <typename T>
+bool IsGelijk(const T& a, const T& b);
+
+// Specialisatie (lege haken)
+template <>
+bool IsGelijk<const char*>(const char* const& a, const char* const& b) {
+    return std::strcmp(a, b) == 0;
+}
+```
+
+---
+
+
+
+
+
+  </script>
+</section>
+</div></div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/zoom/zoom.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/search/search.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script>
+
+			// Also available as an ES module, see:
+			// https://revealjs.com/initialization/
+			Reveal.initialize({
+				width: 1200,
+				controls: true,
+				progress: true,
+				center: true,
+				hash: true,
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealZoom, RevealNotes, RevealSearch, RevealMarkdown, RevealHighlight ]
+			});
+
+		</script>
+</body>
+
+</Html>
