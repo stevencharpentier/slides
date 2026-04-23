@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>IT&IMT - Welkom bij C++ programmeren</title>
+
+		<meta name="description" content="IT&IMT - C++ programmeren">
+		<meta name="author" content="Steven Charpentier">
+
+		<meta name="apple-mobile-web-app-capable" content="no">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/dracula.css" id="theme">
+		
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+		<!--
+		
+		<link rel="stylesheet" href="APstyle.css"> 
+
+		<link rel="stylesheet" href="plugin/highlight/github-dark.css">
+
+		-->
+
+
+	</head>
+
+	<body>
+		<div class="reveal">
+            <div class="slides">
+    <section data-markdown>
+  <script type="text/template">
+# 🎓  Operators & Overloading
+
+
+---
+
+
+# Operator Overloading
+### C++ Objecten laten werken als primitieve types
+
+---
+
+## Wat is Operator Overloading?
+
+In C++ kun je standaard operatoren (`+`, `-`, `*`, `==`, etc.) een eigen betekenis geven voor jouw klasses.
+
+* **Doel:** Code leesbaarder en intuïtiever maken.
+* **Voorbeeld:** `getal1 + getal2` i.p.v. `getal1.Optellen(getal2)`.
+* **Gedrag:** Je objecten gedragen zich als "first-class citizens", net als `int` of `float`.
+
+---
+
+## Concept: De "PositiveInt"
+
+Stel, we maken een wrapper rond een `int` die nooit negatief mag zijn.
+
+* **Regel:** Als een resultaat onder 0 zakt, gooien we een exception.
+* **Zonder overloading:** `a.min(b)` (Onhandig bij complexe formules).
+* **Met overloading:** `a - b` (Natuurlijk en veilig).
+
+---
+
+## De Syntax
+
+Een operator is een speciale functie:
+1.  Keyword: `operator`
+2.  Symbool: bijv. `+`
+
+Je kunt ze op twee manieren definiëren:
+* **Member function:** Onderdeel van de klasse (`this` is de linkerkant).
+* **Vrije functie:** Buiten de klasse (vaak met `friend`).
+
+---
+
+## Overloading als Member Function
+
+Wanneer een operator binnen de klasse staat, is het linker-object altijd `this`.
+
+```cpp
+class PositiveInt {
+private:
+    int waarde;
+public:
+    PositiveInt(int w) : waarde(w >= 0 ? w : 0) {
+        if (w < 0) throw std::invalid_argument("Negatief!");
+    }
+
+    // Overladen van +
+    PositiveInt operator+(const PositiveInt& andere) const {
+        return PositiveInt(this->waarde + andere.waarde);
+    }
+};
+```
+
+---
+
+## Logica toevoegen (De - operator)
+
+Hier voegen we onze eigen veiligheidsregels toe aan de standaard bewerking.
+
+```cpp
+PositiveInt operator-(const PositiveInt& andere) const {
+    int resultaat = this->waarde - andere.waarde;
+    if (resultaat < 0) {
+        throw std::underflow_error("Resultaat negatief!");
+    }
+    return PositiveInt(resultaat);
+}
+```
+
+---
+
+## Overzicht van Operatoren
+
+
+
+De meeste operatoren in C++ zijn overlaadbaar.
+
+---
+
+## Rekenkundige Operatoren
+
+Meestal gebruikt voor wiskundige objecten (vectoren, valuta, complexe getallen).
+
+| Operator | Type | Gebruik |
+| :--- | :--- | :--- |
+| `+`, `-`, `*`, `/` | Binair | Geeft vaak nieuw object terug |
+| `+=`, `-=` | Binair | Past `*this` aan, geeft reference terug |
+| `++`, `--` | Unair | Increment/Decrement |
+
+---
+
+## Samengestelde toewijzing (`+=`)
+
+```cpp
+// We passen het huidige object aan
+PositiveInt& operator+=(const PositiveInt& andere) {
+    this->waarde += andere.waarde;
+    return *this; // Return reference voor chaining
+}
+```
+
+---
+
+## Vergelijkingsoperatoren
+
+Cruciaal voor het sorteren van objecten of gebruik in `std::set` en `std::map`.
+
+* **Basis:** `==`, `!=`, `<`, `>`, `<=`, `>=`
+* **Modern (C++20):** De Spaceship Operator `<=>`
+
+
+
+---
+
+## De Spaceship Operator (`<=>`)
+
+Sinds C++20 hoef je vaak maar **één** operator te schrijven. De compiler genereert de rest (`<`, `>`, `<=`, `>=`) automatisch.
+
+```cpp
+// C++20 Three-way comparison
+auto operator<=>(const PositiveInt& andere) const {
+    return this->waarde <=> andere.waarde;
+}
+
+bool operator==(const PositiveInt& andere) const {
+    return this->waarde == andere.waarde;
+}
+```
+
+---
+
+## Waarschuwing: Logische Operatoren
+
+Je kunt `&&` en `||` overladen, maar doe dit **bijna nooit**.
+
+> **Gevaar:** Je verliest **Short-circuit evaluation**.
+
+* Normaal: Bij `A && B` wordt `B` niet uitgevoerd als `A` false is.
+* Overloaded: Beiden worden **altijd** uitgevoerd (gedragen zich als functie-argumenten). Dit kan leiden tot crashes bij nullpointers!
+
+---
+
+## Niet-overlaadbare Operatoren
+
+Sommige operatoren zijn te essentieel voor de compiler om aan te passen:
+
+| Operator | Naam |
+| :--- | :--- |
+| `.` | Member Access |
+| `::` | Scope Resolution |
+| `?:` | Ternary |
+| `sizeof` | Grootte in bytes |
+| `typeid` | Type identificatie |
+
+---
+
+## Prefix vs Postfix (`++i` vs `i++`)
+
+
+
+Technisch gezien zijn dit verschillende functies:
+
+1.  **Prefix (`++obj`):** Geen parameters. Verhoogt en geeft `*this` terug.
+2.  **Postfix (`obj++`):** Heeft een **dummy `int` parameter**. Maakt een kopie, verhoogt, en geeft de *oude* kopie terug.
+
+---
+
+## Prefix vs Postfix: Code
+
+```cpp
+// Prefix: ++t (Snelste, geen kopie)
+Teller& operator++() {
+    waarde++;
+    return *this;
+}
+
+// Postfix: t++ (Trager door tijdelijke kopie)
+Teller operator++(int) {
+    Teller tijdelijk = *this; 
+    waarde++;                 
+    return tijdelijk;         
+}
+```
+
+---
+
+## Vrije Functies en `friend`
+
+Soms kan een operator geen member function zijn. 
+
+**Het probleem:** `5 * mijnObject`
+* De linkerkant is een `int`. 
+* We kunnen de `int`-klasse van C++ niet aanpassen.
+
+**De oplossing:** Een vrije functie met de `friend` modifier.
+
+---
+
+## Gebruik van `friend`
+
+```cpp
+class PositiveInt {
+    // ... data ...
+    // Geef de vrije functie toegang tot private data
+    friend PositiveInt operator*(int links, const PositiveInt& rechts);
+};
+
+// Implementatie buiten de klasse
+PositiveInt operator*(int links, const PositiveInt& rechts) {
+    return PositiveInt(links * rechts.waarde);
+}
+```
+
+---
+
+## De `<<` Operator (`std::cout`)
+
+Waarom werkt `std::cout << object`? 
+Het is een vrije functie die een `std::ostream` accepteert.
+
+```cpp
+// We retourneren de ostream voor chaining (cout << a << b)
+std::ostream& operator<<(std::ostream& os, const Hero& h) {
+    os << "Hero[Naam: " << h.naam << ", HP: " << h.hp << "]";
+    return os;
+}
+```
+
+---
+
+## De Gouden Regel
+
+> **Gebruik overloading alleen als het de code écht duidelijker maakt.**
+
+Vraag jezelf af: "Is de betekenis van `+` voor deze klasse overduidelijk voor een andere programmeur?" 
+* Ja? Overload.
+* Nee? Gebruik een gewone functie met een naam (bijv. `.Merge()`).
+
+---
+
+
+
+
+
+  </script>
+</section>
+</div></div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/zoom/zoom.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/search/search.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script>
+
+			// Also available as an ES module, see:
+			// https://revealjs.com/initialization/
+			Reveal.initialize({
+				width: 1200,
+				controls: true,
+				progress: true,
+				center: true,
+				hash: true,
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealZoom, RevealNotes, RevealSearch, RevealMarkdown, RevealHighlight ]
+			});
+
+		</script>
+</body>
+
+</Html>
