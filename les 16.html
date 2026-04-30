@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>IT&IMT - Welkom bij C++ programmeren</title>
+
+		<meta name="description" content="IT&IMT - C++ programmeren">
+		<meta name="author" content="Steven Charpentier">
+
+		<meta name="apple-mobile-web-app-capable" content="no">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/dracula.css" id="theme">
+		
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+		<!--
+		
+		<link rel="stylesheet" href="APstyle.css"> 
+
+		<link rel="stylesheet" href="plugin/highlight/github-dark.css">
+
+		-->
+
+
+	</head>
+
+	<body>
+		<div class="reveal">
+            <div class="slides">
+    <section data-markdown>
+  <script type="text/template">
+# 🎓  Unit testing in C++
+
+## Met CTest en Catch2
+
+---
+
+## Waarom Unit Testing?
+
+Binnen **Immersive Technologies** is betrouwbaarheid essentieel.
+We willen zeker weten dat:
+
+* Wiskundige berekeningen kloppen.
+* 3D-logica correct blijft bij groei.
+* Fouten vroegtijdig worden ontdekt.
+
+---
+
+## Wat is Unit Testing?
+
+* **Isolatie:** Het testen van individuele componenten (functies of klassen).
+* **Verificatie:** Controleren of de output klopt bij een gegeven input.
+* **Documentatie:** Een test laat zien hoe code bedoeld is te werken.
+* **Regressie:** Voorkomen dat oude code breekt door nieuwe toevoegingen.
+
+---
+
+## Testresultaten Begrijpen (IDE)
+
+In moderne IDE's zoals CLion zie je een visuele boomstructuur:
+
+* ✅ **Groen vinkje:** Succesvol (alle `REQUIRE` statements waar).
+* ❌ **Rood kruisje:** Gefaald (testcase bevat een fout).
+* 🔄 **Animatie:** Test is momenteel in uitvoering.
+
+---
+
+## Catch2 Output
+
+In plaats van vage foutmeldingen geeft Catch2 specifieke info:
+
+> `REQUIRE(speler.GetHealth() == 100)`
+
+Indien de health 90 was, zegt de console letterlijk:
+`Expansion: 90 == 100`
+
+---
+
+## Projectstructuur
+
+Scheid je broncode (`src`) van je testcode (`tests`):
+
+```text
+ProjectNaam/
+├── CMakeLists.txt         (Hoofd)
+├── src/
+│   ├── CMakeLists.txt     (Library)
+│   ├── Calculator.h
+│   └── Calculator.cpp
+└── tests/
+    ├── CMakeLists.txt     (Tests)
+    └── test_calculator.cpp
+```
+
+---
+
+## CMake: Het Hoofd bestand
+
+Activeer de test-engine en voeg de mappen toe.
+
+```cmake
+cmake_minimum_required(VERSION 3.20)
+project(MijnProject)
+
+set(CMAKE_CXX_STANDARD 20)
+
+enable_testing()
+
+add_subdirectory(src)
+add_subdirectory(tests)
+```
+
+---
+
+## CMake: De Broncode (`src`)
+
+Maak een **library** zodat de test-executable de code kan gebruiken.
+
+```cmake
+# src/CMakeLists.txt
+add_library(srclib Calculator.cpp Calculator.h)
+```
+
+---
+
+## CMake: De Test Config (`tests`)
+
+Haal Catch2 binnen en koppel alles.
+
+```cmake
+find_package(Catch2 3 REQUIRED)
+
+add_executable(unit_tests test_calculator.cpp)
+
+# Link aan Catch2 en onze eigen code
+target_link_libraries(unit_tests 
+    PRIVATE Catch2::Catch2WithMain srclib
+)
+
+include(Catch)
+catch_discover_tests(unit_tests)
+```
+
+---
+
+## Een Eerste Test Schrijven
+
+Gebruik het **Arrange-Act-Assert** patroon.
+
+```cpp
+#include <catch2/catch_test_macros.hpp>
+#include "Calculator.h"
+
+TEST_CASE("Calculator optellen", "[Calculator]") {
+    // 1. Arrange
+    Calculator calc;
+
+    // 2. Act
+    int resultaat = calc.Add(5, 3);
+
+    // 3. Assert
+    REQUIRE(resultaat == 8);
+}
+```
+
+---
+
+## Werken met Sections
+
+Gebruik `SECTION` om code te hergebruiken. De code boven de secties wordt voor elke sectie opnieuw uitgevoerd.
+
+```cpp
+TEST_CASE("Held status en grenzen", "[Held]") {
+    Held speler(400, 300); // Arrange
+
+    SECTION("Correcte startpositie") {
+        REQUIRE(speler.GetPositionX() == 400);
+    }
+
+    SECTION("Clamping naar 0") {
+        speler.SetPosition(-50, -10);
+        REQUIRE(speler.GetPositionX() == 0);
+    }
+}
+```
+
+---
+
+## Test Fixtures (Raylib)
+
+Handig voor setup en cleanup van externe libraries.
+
+```cpp
+struct RaylibFixture {
+    RaylibFixture() { InitWindow(800, 600, "Test"); }
+    ~RaylibFixture() { CloseWindow(); }
+};
+
+TEST_CASE_METHOD(RaylibFixture, "Window initialisatie", "[raylib]") {
+    REQUIRE(IsWindowReady() == true);
+}
+```
+
+---
+
+## Precisie bij Floats
+
+Vergelijk floats nooit met `==`. Gebruik `Approx`.
+
+```cpp
+// FOUT
+REQUIRE(held.GetSpeed() == 1.5f); 
+
+// GOED
+REQUIRE(held.GetSpeed() == Catch::Approx(1.5f).margin(0.001));
+```
+
+---
+
+## Pointer-veiligheid
+
+Test of `unique_ptr` logica klopt na een move.
+
+```cpp
+TEST_CASE("Holder ownership transfer", "[Memory]") {
+    Holder h;
+    auto data = h.GiveAwayUniqueData(); 
+
+    REQUIRE(data != nullptr);
+    REQUIRE(h.HasUniqueData() == false);
+}
+```
+---
+
+# Test Driven Development
+
+---
+
+## Test Driven Development (TDD)
+
+Draai het proces om: schrijf de test **vóór** de code.
+
+* 🔴 **Red:** Schrijf een test die faalt (code bestaat nog niet).
+* 🟢 **Green:** Schrijf minimale code om de test te doen slagen.
+* 🔵 **Refactor:** Maak de code mooier zonder de werking te veranderen.
+
+---
+
+## Waarom TDD in Immersive Tech?
+
+In complexe systemen (engines/VR) bouw je vaak te snel te groot. 
+
+TDD dwingt je om in kleine, behapbare stappen te denken en garandeert dat elk stukje logica direct bewezen correct is.
+```
+---
+
+
+
+
+
+  </script>
+</section>
+</div></div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/zoom/zoom.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/search/search.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script>
+
+			// Also available as an ES module, see:
+			// https://revealjs.com/initialization/
+			Reveal.initialize({
+				width: 1200,
+				controls: true,
+				progress: true,
+				center: true,
+				hash: true,
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealZoom, RevealNotes, RevealSearch, RevealMarkdown, RevealHighlight ]
+			});
+
+		</script>
+</body>
+
+</Html>

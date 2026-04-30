@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>IT&IMT - Welkom bij C++ programmeren</title>
+
+		<meta name="description" content="IT&IMT - C++ programmeren">
+		<meta name="author" content="Steven Charpentier">
+
+		<meta name="apple-mobile-web-app-capable" content="no">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/dracula.css" id="theme">
+		
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+		<!--
+		
+		<link rel="stylesheet" href="APstyle.css"> 
+
+		<link rel="stylesheet" href="plugin/highlight/github-dark.css">
+
+		-->
+
+
+	</head>
+
+	<body>
+		<div class="reveal">
+            <div class="slides">
+    <section data-markdown>
+  <script type="text/template">
+# 🎓  Pointers, een opfrisser
+
+
+---
+
+# Pointer Refresher: C++ Memory Management
+
+---
+
+## De Basis: De `Data` Klasse
+
+```cpp
+class Data {
+public:
+    std::string myContent = "my content";
+};
+```
+
+---
+
+## 1. Member Data Toegang
+### Pointer, Reference of Value?
+
+```cpp
+class Holder {
+    Data myData;
+
+public:
+    // 1. Pointer: "Hier is het adres"
+    // Gebruik const om aan te geven dat de data niet veranderd mag worden
+    const Data* GetDataPointer() const { return &myData; }
+
+    // 2. Reference: "Dit is een alias"
+    // Veilig en snel (geen kopie), maar direct gekoppeld aan het origineel
+    const Data& GetDataByReference() const { return myData; }
+
+    // 3. Value: "Hier is een kopie"
+    // Veiligste optie: aanpassingen aan de kopie raken het origineel niet
+    Data GetDataByValue() const { return myData; }
+};
+```
+
+---
+
+## 2. De "Old School" Raw Pointer
+### Handmatige allocatie op de Heap
+
+```cpp
+class Holder {
+    Data* myDataByOldStylePointer;
+
+public:
+    Holder() {
+        myDataByOldStylePointer = new Data(); // Heap allocatie
+    }
+
+    ~Holder() {
+        delete myDataByOldStylePointer; // Handmatige cleanup
+    }
+
+    // Read-only toegang tot de pointer data
+    const Data* GetOldDataAsPointer() const {
+        return myDataByOldStylePointer;
+    }
+
+    // Dereferenceren naar een alias (Reference)
+    const Data& GetOldDataAsReference() const {
+        return *myDataByOldStylePointer;
+    }
+};
+```
+
+---
+
+## 3. Modern C++: `std::unique_ptr`
+### Smart Management & Ownership
+
+```cpp
+class Holder {
+    std::unique_ptr<Data> myUniqueData = std::make_unique<Data>();
+
+public:
+    // Lenen via de ruwe pointer (Ownership blijft hier)
+    // De .get() methode geeft het adres terug
+    const Data* GetUniqueDataPointer() const { 
+        return myUniqueData.get(); 
+    }
+
+    // Lenen via een alias
+    const Data& GetUniqueDataByReference() const { 
+        return *myUniqueData; 
+    }
+
+    // Ownership verplaatsen (Weggeven)
+    // De Holder is de data hierna kwijt!
+    std::unique_ptr<Data> GiveAwayUniqueData() { 
+        return std::move(myUniqueData); 
+    }
+};
+```
+
+---
+
+## 4. De Impact van Keuzes
+
+```cpp
+int main() {
+    auto holder = std::make_unique<Holder>();
+
+    // CASE A: Pointer (aanpassing beïnvloedt holder)
+    Data* dataPtr = holder->GetDataPointer(); 
+    dataPtr->myContent = "Gewijzigd!";
+
+    // CASE B: Value (aanpassing is lokaal)
+    Data dataVal = holder->GetDataByValue();
+    dataVal.myContent = "Ik ben een kopie";
+
+    holder->writeData(); // Wat is de output?
+}
+```
+
+---
+
+
+
+## Syntax: `->` vs `.`
+
+Het meest zichtbare verschil zit in hoe de programmeur de data aanspreekt.
+
+```cpp
+// 1. Pointer (Het adres)
+const Data* ptr = holder.GetDataPointer();
+if (ptr != nullptr) {         // Veiligheidscheck nodig!
+    std::cout << ptr->myContent; 
+}
+
+// 2. Reference (De alias)
+const Data& ref = holder.GetDataByReference();
+std::cout << ref.myContent;   // Directer en "schoner"
+```
+
+
+
+---
+
+## De "Garantie" (Nullability)
+
+Het belangrijkste verschil voor de stabiliteit van je code:
+
+* **Pointer (`const Data*`)**: Kan `nullptr` zijn. De ontvanger krijgt een "briefkaartje" met een adres, maar moet zelf kijken of er daar wel een huis staat.
+* **Reference (`const Data&`)**: Kan (officieel) niet `nullptr` zijn. Je geeft de **garantie** dat het object bestaat.
+
+**Gevolg:** Bij een reference hoef je geen `if (ref != nullptr)` te checken; je code is minder foutgevoelig voor crashes.
+
+
+
+---
+
+## Welke kies je?
+
+| Kenmerk | Pointer (`*`) | Reference (`&`) |
+| :--- | :--- | :--- |
+| **Intentie** | De data is **optioneel**. | De data is **verplicht**. |
+| **Flexibiliteit** | Kan later naar een ander object wijzen. | Zit "vast" aan het originele object. |
+| **Best Practice** | Gebruik voor optionele parameters of arrays. | **De standaard** voor read-only toegang. |
+
+**Gouden regel:** Gebruik altijd een `const T&` (Reference) tenzij je een goede reden hebt om een Pointer te gebruiken (zoals wanneer iets "leeg" mag zijn).
+---
+De echte **Gouden regel**: Gebruik smart pointers (`std::unique_ptr`, `std::shared_ptr`) in plaats van raw pointers voor dynamisch geheugenbeheer. Ze bieden automatische resource management en voorkomen veelvoorkomende fouten zoals memory leaks en dangling pointers.
+  </script>
+</section>
+</div></div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/zoom/zoom.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/search/search.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script>
+
+			// Also available as an ES module, see:
+			// https://revealjs.com/initialization/
+			Reveal.initialize({
+				width: 1200,
+				controls: true,
+				progress: true,
+				center: true,
+				hash: true,
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealZoom, RevealNotes, RevealSearch, RevealMarkdown, RevealHighlight ]
+			});
+
+		</script>
+</body>
+
+</Html>
