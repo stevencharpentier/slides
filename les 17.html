@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>IT&IMT - Welkom bij C++ programmeren</title>
+
+		<meta name="description" content="IT&IMT - C++ programmeren">
+		<meta name="author" content="Steven Charpentier">
+
+		<meta name="apple-mobile-web-app-capable" content="no">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/dracula.css" id="theme">
+		
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+		<!--
+		
+		<link rel="stylesheet" href="APstyle.css"> 
+
+		<link rel="stylesheet" href="plugin/highlight/github-dark.css">
+
+		-->
+
+
+	</head>
+
+	<body>
+		<div class="reveal">
+            <div class="slides">
+    <section data-markdown>
+  <script type="text/template">
+# 🎓 Geheugen-Architectuur
+## De Kracht van `*` en `&`
+
+---
+
+## Het Fundament
+### De Keuze van de Architect
+
+* **Value Semantics**: Je kopieert de hele doos.
+* **Reference/Pointer Semantics**: Je geeft alleen het adreskaartje door.
+* **De Ratio**: Performance in C++ draait om het minimaliseren van data-verplaatsing.
+
+---
+
+## De Address-of Operator: &
+### "Waar woon je?"
+
+* **Actie**: Het opvragen van de GPS-coördinaten (het adres) van een variabele.
+* **Geheugen**: Kost **0 bytes** extra opslag.
+* **Context**: Gebruik dit bij de **aanroep** van een functie die een pointer verwacht.
+
+```cpp
+void PrintLocatie(int* p);
+
+int main() {
+    int score = 100;
+    PrintLocatie(&score); // De & haalt het adres op
+}
+```
+
+---
+
+## De Pointer: *
+### De Adres-container
+
+* **Actie**: Het reserveren van een vakje op de **Stack** voor een adres.
+* **Geheugen**: Neemt exact **8 bytes** (64 bits) in beslag.
+* **Eigenschap**: Kan leeg zijn (`nullptr`).
+
+```cpp
+int x = 42;
+int* p = &x; // p is een container voor het adres van x
+```
+
+---
+
+## Pointer als Functie-parameter
+### Het Contract
+
+* **Declaratie**: `void Update(int* status)`
+* **Aanroep**: `Update(&mijnStatus);`
+* **De Regel**: Gebruik `&` bij de aanroep waar een `*` in de declaratie wordt gevraagd.
+
+---
+
+## Dereferencing: *
+### "Ga naar binnen"
+
+* **Actie**: Het volgen van het adres in de pointer om de werkelijke data aan te passen.
+* **Achter de schermen**: De CPU voert een 'store' instructie uit op de locatie in het RAM.
+
+```cpp
+void Reset(int* p) {
+    if (p != nullptr) { // Verplichte veiligheidscheck
+        *p = 0; // "Volg de pointer en schrijf daar 0"
+    }
+}
+```
+
+---
+
+## De Reference: &
+### De Alias
+
+* **Actie**: Een tweede naam plakken op een bestaand geheugenvakje.
+* **Geheugen**: `0 bytes`. De koppeling gebeurt door de compiler.
+* **Eigenschap**: Kan niet `nullptr` zijn. Veiliger dan een pointer.
+
+```cpp
+void Genees(int& hp) {
+    hp += 20; // Je werkt direct in het originele vakje
+}
+
+int main() {
+    int spelerHP = 50;
+    Genees(spelerHP); // Geen symbolen nodig bij aanroep
+}
+```
+
+---
+
+## Architecturale Keuzetabel
+
+| Methode | Declaratie | Aanroep | Geheugen | Gebruik |
+| :--- | :--- | :--- | :--- | :--- |
+| **Value** | `void F(int x)` | `F(y)` | Kopie | Eigen kopie nodig |
+| **Reference** | `void F(int& x)` | `F(y)` | 0 bytes | **Standaard** |
+| **Pointer** | `void F(int* x)` | `F(&y)` | 8 bytes | Optionele input |
+
+---
+
+## Modern Geheugenbeheer
+### Ownership
+
+* **Raw Pointers (*)**: Gebruik deze alleen om naar data te *kijken*.
+* **Smart Pointers**: Gebruik deze om geheugen te *beheren*.
+    * `std::unique_ptr<T>`: Eén eigenaar.
+    * `std::shared_ptr<T>`: Gedeeld eigendom.
+* **Geen `new` of `delete`**: De architectuur van vandaag is zelf-reinigend.
+
+---
+
+## Samenvatting
+
+* `&` bij **declaratie**: Alias (Reference).
+* `&` bij **aanroep**: Adres opvragen (Address-of).
+* `*` bij **declaratie**: Container voor adres (Pointer).
+* `*` bij **gebruik**: Adres volgen (Dereferencing).
+
+
+
+
+
+
+  </script>
+</section>
+</div></div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/zoom/zoom.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/search/search.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script>
+
+			// Also available as an ES module, see:
+			// https://revealjs.com/initialization/
+			Reveal.initialize({
+				width: 1200,
+				controls: true,
+				progress: true,
+				center: true,
+				hash: true,
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealZoom, RevealNotes, RevealSearch, RevealMarkdown, RevealHighlight ]
+			});
+
+		</script>
+</body>
+
+</Html>

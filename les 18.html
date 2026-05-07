@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>IT&IMT - Welkom bij C++ programmeren</title>
+
+		<meta name="description" content="IT&IMT - C++ programmeren">
+		<meta name="author" content="Steven Charpentier">
+
+		<meta name="apple-mobile-web-app-capable" content="no">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/dracula.css" id="theme">
+		
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+		<!--
+		
+		<link rel="stylesheet" href="APstyle.css"> 
+
+		<link rel="stylesheet" href="plugin/highlight/github-dark.css">
+
+		-->
+
+
+	</head>
+
+	<body>
+		<div class="reveal">
+            <div class="slides">
+    <section data-markdown>
+  <script type="text/template">
+# 🎓  Lambdas en Functors
+## Anonieme Functies en Captures
+
+---
+
+## De Anatomie van een Lambda
+### De drie bouwstenen
+
+* **`[]` (Capture Clause)**: De "rugzak" met variabelen uit de omgeving.
+* **`()` (Parameter List)**: De input voor de functie.
+* **`{}` (Body)**: De logica.
+
+```cpp
+auto check = [](int hp) { return hp > 0; };
+```
+
+---
+
+## De Capture Clause: Waarde vs. Reference
+### Geheugenbeheer in de rugzak
+
+* **`[=]` (By Value)**: Maakt een kopie. Veilig, maar kost geheugen bij grote objecten.
+* **`[&]` (By Reference)**: Directe link naar origineel. Snel, maar gevaarlijk (dangling references).
+
+---
+
+## Expliciete Captures
+### De Architect-keuze
+
+* **`[x]`**: Kopieer alleen x.
+* **`[&x]`**: Reference naar alleen x.
+* **`[x, &y]`**: Kopieer x, reference naar y.
+* **Ratio**: Wees expliciet om onbedoelde kopieën of crashes te voorkomen.
+
+---
+
+## Capturing `this`
+### Toegang tot de Class
+
+* In C++20/23: Verplicht om `this` expliciet te vangen voor toegang tot member-variabelen.
+
+```cpp
+auto oefen = [this]() {
+    kracht += 5; // 'kracht' is een member van de class
+};
+```
+
+---
+
+## Praktijk: Sorteren in Raylib
+### De Lambda als Predicate
+
+```cpp
+std::sort(objecten.begin(), objecten.end(), [](const Sprite& a, const Sprite& b) {
+    return a.y < b.y; // Sorteren op Y-as (Depth sorting)
+});
+```
+
+---
+
+## Under the Hood
+### Closures
+
+* De compiler genereert een tijdelijke class (**Closure**).
+* Captures worden **member-variabelen**.
+* De body wordt de **`operator()`**.
+* C++23: `[]() static {}` voor lambdas zonder state (performance winst).
+
+---
+
+## Wat is dan een Functor?
+### De operator()
+
+* Een functor is een class die de "haakjes-operator" overlaadt.
+* Hiermee kan een object aangeroepen worden als een functie.
+
+```cpp
+class Teller {
+public:
+    void operator()(int n) const {
+        std::cout << n;
+    }
+};
+```
+
+---
+
+## Het voordeel: State
+### Toestand onthouden
+
+* In tegenstelling tot gewone functies, kan een functor data opslaan in member-variabelen via de constructor.
+
+```cpp
+class Opteller {
+    int basis;
+public:
+    Opteller(int b) : basis(b) {}
+    int operator()(int n) const { return n + basis; }
+};
+```
+
+---
+
+## Functors vs. Lambdas
+### De vergelijking
+
+* **Lambdas**: Syntactische suiker voor een functor. Ideaal voor lokale, eenmalige logica.
+* **Functors**: Herbruikbaar, kunnen in headers staan, geschikt voor complexe logica.
+* **Performance**: Beide zijn sneller dan functie-pointers door compiler-inlining.
+
+
+
+  </script>
+</section>
+</div></div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/zoom/zoom.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/search/search.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script>
+
+			// Also available as an ES module, see:
+			// https://revealjs.com/initialization/
+			Reveal.initialize({
+				width: 1200,
+				controls: true,
+				progress: true,
+				center: true,
+				hash: true,
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealZoom, RevealNotes, RevealSearch, RevealMarkdown, RevealHighlight ]
+			});
+
+		</script>
+</body>
+
+</Html>

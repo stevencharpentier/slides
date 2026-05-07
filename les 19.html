@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>IT&IMT - Welkom bij C++ programmeren</title>
+
+		<meta name="description" content="IT&IMT - C++ programmeren">
+		<meta name="author" content="Steven Charpentier">
+
+		<meta name="apple-mobile-web-app-capable" content="no">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/dracula.css" id="theme">
+		
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+		<!--
+		
+		<link rel="stylesheet" href="APstyle.css"> 
+
+		<link rel="stylesheet" href="plugin/highlight/github-dark.css">
+
+		-->
+
+
+	</head>
+
+	<body>
+		<div class="reveal">
+            <div class="slides">
+    <section data-markdown>
+  <script type="text/template">
+# 🎓  
+# Hoofdstuk 20: Bitflags
+### Efficiënt statusbeheer
+
+---
+
+## Machten van 2
+### Bit-uniekheid
+
+* Elke status krijgt een eigen bit.
+* Gebruik `1 << n` voor unieke waarden.
+
+* `1 << 0` = 0001 (1)
+* `1 << 1` = 0010 (2)
+* `1 << 2` = 0100 (4)
+
+---
+
+## Bitwise Operators
+### De Gereedschapskist
+
+* **`|` (OR)**: Vlag aanzetten.
+* **`&` (AND)**: Vlag controleren.
+* **`^` (XOR)**: Vlag togglen (omdraaien).
+* **`&= ~`**: Vlag specifiek uitzetten.
+
+---
+
+## Praktijk: Render Flags
+
+```cpp
+enum Flags {
+    SHADOWS = 1 << 0,
+    BLOOM   = 1 << 1,
+    FXAA    = 1 << 2
+};
+
+uint8_t settings = SHADOWS | FXAA; // 101 in bits
+
+if (settings & SHADOWS) { /* Teken schaduw */ }
+```
+
+---
+
+## Waarom Bitflags?
+### De Ratio
+
+* **Geheugen**: 8 vlaggen in 1 byte (`uint8_t`).
+* **Snelheid**: Bitwise operaties gebeuren in één CPU-cyclus.
+* **API Design**: Vervangt 10 booleans door 1 parameter.
+
+
+
+
+
+  </script>
+</section>
+</div></div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/zoom/zoom.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/search/search.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script>
+
+			// Also available as an ES module, see:
+			// https://revealjs.com/initialization/
+			Reveal.initialize({
+				width: 1200,
+				controls: true,
+				progress: true,
+				center: true,
+				hash: true,
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealZoom, RevealNotes, RevealSearch, RevealMarkdown, RevealHighlight ]
+			});
+
+		</script>
+</body>
+
+</Html>
