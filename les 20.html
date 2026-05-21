@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>IT&IMT - Welkom bij C++ programmeren</title>
+
+		<meta name="description" content="IT&IMT - C++ programmeren">
+		<meta name="author" content="Steven Charpentier">
+
+		<meta name="apple-mobile-web-app-capable" content="no">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/dracula.css" id="theme">
+		
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+		<!--
+		
+		<link rel="stylesheet" href="APstyle.css"> 
+
+		<link rel="stylesheet" href="plugin/highlight/github-dark.css">
+
+		-->
+
+
+	</head>
+
+	<body>
+		<div class="reveal">
+            <div class="slides">
+    <section data-markdown>
+  <script type="text/template">
+# 🎓  Hoofdstuk 21: Iterators
+## De Universele Lijm in C++
+
+---
+
+### Waarom Iterators?
+
+*   Klassieke loop: `for (int i = 0; i < size; ++i)`
+*   Werkt perfect bij `std::vector` (continu geheugen).
+*   **Het probleem:** Wat bij een `std::list` (linked list) of `std::set` (binaire boom)?
+*   Elementen liggen kris kras in het geheugen.
+*   De index-aanpak `[i]` werkt daar simpelweg niet.
+
+---
+
+### De Analogie: De Detective
+
+*   **De Heap:** De stad waar het mysterie zich bevindt.
+*   **De Nodes:** De huizen (bewijsstukken) kris kras door de stad.
+    *   Bevatten de data én het adres van de *volgende* aanwijzing.
+*   **De Iterator (`Hercule.zip`):** De detective op de **Stack**.
+    *   Draagt geen zware data, heeft alleen het huidige adres op zijn smartphone.
+
+---
+
+### De Detective in Code
+
+*   **`*it` (Dereferencing):** De detective bekijkt de aanwijzing op de huidige locatie (data opvragen).
+*   **`++it` (Increment):** De detective leest het volgende adres en reist er meteen naartoe.
+*   **`it != container.end()`:** Checken of het spoor doodloopt.
+
+---
+
+### Het Geheugenmodel
+
+```mermaid
+flowchart TD
+    subgraph Stack [STACK]
+        it["Iterator<br>Houdt bij: Adres van Node 1 (0x0124)"]
+    end
+
+    subgraph Heap [HEAP]
+        node1["Node 1 (0x0124)<br>• Data: 10<br>• Next: 0x0482"]
+        node2["Node 2 (0x0482)<br>• Data: 20<br>• Next: 0x0991"]
+        node3["Node 3 (0x0991)<br>• Data: 30<br>• Next: nullptr"]
+    end
+
+    it -.-> node1
+    node1 --> node2
+    node2 --> node3
+    node3 --> null[nullptr]
+
+```
+
+---
+
+### Wat gebeurt er bij `++it`?
+
+Behind the scenes bij een linked list:
+
+1. Iterator leest huidige pointer op de Stack (`0x0124`).
+2. CPU opent de Node op dat adres op de Heap.
+3. Iterator leest het `Next`-veld uit die Node (`0x0482`).
+4. Iterator overschrijft zijn eigen pointer op de Stack met het nieuwe adres.
+
+*Geen data gekopieerd, alleen een adres aangepast.*
+
+---
+
+### Waarom de grens onbekend is
+
+* Een iterator heeft geen helikopterview; hij weet alleen waar hij *nu* staat.
+* We stoppen pas als we de finishlijn passeren.
+* `container.end()` geeft een iterator terug die net *voorbij* het laatste element wijst (intern `nullptr`).
+* Loop-stop: `nullptr == nullptr` -> Case gesloten.
+
+---
+
+## 21.2 De Syntax in de Praktijk
+
+* **`begin()`**: Pointer naar het eerste element.
+* **`end()`**: Pointer naar de finishlijn (past-the-end).
+
+---
+
+### De Traditionele Schrijfwijze
+
+Vóór C++11 moesten we het volledige geneste type uitschrijven:
+
+```cpp
+#include <iostream>
+#include <vector>
+
+int main() {
+    std::vector<int> scores = {78, 92, 85, 64, 90};
+
+    // Visueel zware syntax:
+    for (std::vector<int>::iterator it = scores.begin(); 
+         it != scores.end(); 
+         ++it) {
+        std::cout << *it << " ";
+    }
+    return 0;
+}
+
+```
+
+---
+
+### De Moderne Schrijfwijze: `auto`
+
+Sinds C++11 weet de compiler het type al via `begin()`.
+
+```cpp
+std::vector<int> scores = {78, 92, 85, 64, 90};
+
+// Schoon en leesbaar
+for (auto it = scores.begin(); it != scores.end(); ++it) {
+    std::cout << *it << " ";
+}
+
+```
+
+---
+
+### Pre-increment vs Post-increment
+
+* Je ziet vrijwel altijd `++it` in plaats van `it++`.
+* `it++` maakt intern een tijdelijke kopie om de oude waarde te onthouden.
+* Moderne compilers optimaliseren dit bij STL-containers vaak weg...
+* ...maar `++it` blijft de industriestandaard (gegarandeerd zero overhead, ook in debug-builds of custom iterators).
+
+---
+
+### Waarden Aanpassen
+
+Een iterator werkt als een pointer, dus je kunt data overschrijven:
+
+```cpp
+std::vector<int> scores = {10, 20, 30};
+
+for (auto it = scores.begin(); it != scores.end(); ++it) {
+    *it += 5; // Verhoog elk element met 5
+}
+
+```
+
+---
+
+## 21.3 Const Iterators
+
+* Soms wil je data alleen lezen, niet aanpassen.
+* `const_iterator` beschermt de data tegen schrijffouten.
+* Vraag ze expliciet op met `cbegin()` en `cend()`.
+
+```cpp
+std::vector<int> scores = {10, 20, 30};
+
+for (auto it = scores.cbegin(); it != scores.cend(); ++it) {
+    std::cout << *it << " ";
+    // *it = 40; // FOUT: Compiler weigert dit!
+}
+
+```
+
+---
+
+## 21.4 Range-based for-loop
+
+De bekende `for (int s : scores)` is stiekem pure *syntactic sugar*.
+
+De compiler herschrijft het onder de motorkap naar dit:
+
+```cpp
+{
+    auto it = scores.begin();
+    auto end = scores.end();
+    for (; it != end; ++it) {
+        int s = *it;
+        // Jouw code hier
+    }
+}
+
+```
+
+---
+
+## 21.5 Iterators & STL-algoritmen
+
+Iterators ontkoppelen data van logica. `std::find_if` werkt op elke container dankzij iterators:
+
+```cpp
+#include <algorithm>
+#include <vector>
+
+std::vector<int> getallen = {3, 7, 11, 42, 15};
+
+auto it = std::find_if(getallen.begin(), getallen.end(), [](int n) {
+    return n % 2 == 0;
+});
+
+if (it != getallen.end()) {
+    std::cout << "Gevonden: " << *it; // 42
+}
+
+```
+
+---
+
+## 21.6 Iterator Invalidation
+
+* **Gevaar:** De structuur van een container aanpassen (toevoegen/verwijderen) terwijl je er doorheen loopt.
+* Bestaande iterators kunnen spontaan ongeldig worden.
+
+---
+
+### Het Probleem: De Klassieke Crash
+
+```cpp
+std::vector<int> data = {1, 2, 3, 4, 5};
+
+// FOUT: data.erase() sloopt je iterator
+for (auto it = data.begin(); it != data.end(); ++it) {
+    if (*it % 2 != 0) {
+        data.erase(it); // 'it' is nu een losgeslagen pointer!
+    }
+}
+
+```
+
+* `erase()` verschuift elementen naar links.
+* `it` wijst naar niemandsland, de daaropvolgende `++it` veroorzaakt een crash.
+
+---
+
+### Oplossing 1: Handmatige Correctie
+
+`erase()` geeft altijd een nieuwe, geldige iterator terug naar het volgende element.
+
+```cpp
+std::vector<int> data = {1, 2, 3, 4, 5};
+auto it = data.begin();
+
+while (it != data.end()) {
+    if (*it % 2 != 0) {
+        it = data.erase(it); // Vang de nieuwe iterator op
+    } else {
+        ++it; // Alleen ophogen als we NIET wissen
+    }
+}
+
+```
+
+---
+
+### Oplossing 2: Modern C++ (Aanbevolen)
+
+Sinds C++20 gebruiken we de Safe-tactiek `std::erase_if`. Geen handmatige loops meer nodig:
+
+```cpp
+#include <vector>
+#include <algorithm>
+
+std::vector<int> data = {1, 2, 3, 4, 5};
+
+// Veilig, optimaal en onfeilbaar
+std::erase_if(data, [](int n) {
+    return n % 2 != 0;
+});
+
+```
+
+---
+
+## 21.7 Zelf een Iterator Bouwen
+
+* **Waarschuwing:** Een officiële STL-iterator vereist gigantisch veel template-boilerplate (`difference_type`, `value_type`, tags).
+* *Beloftes maken schuld:* Dat gaan we onszelf niet aandoen.
+* De compiler eist voor een range-based for-loop gelukkig alleen: `begin()`, `end()`, `*`, `++` en `!=`.
+
+---
+
+### Custom Iterator: De Code
+
+```cpp
+class IntVerzameling {
+public:
+    int data[5] = {10, 20, 30, 40, 50};
+
+    class InstapIterator {
+    private:
+        int* huidigePointer;
+    public:
+        InstapIterator(int* ptr) : huidigePointer(ptr) {}
+        int& operator*() { return *huidigePointer; }
+        InstapIterator& operator++() { huidigePointer++; return *this; }
+        bool operator!=(const InstapIterator& andere) const { 
+            return huidigePointer != andere.huidigePointer; 
+        }
+    };
+
+    InstapIterator begin() { return InstapIterator(&data[0]); }
+    InstapIterator end() { return InstapIterator(&data[5]); }
+};
+
+```
+
+---
+
+### Het Resultaat in Main
+
+Dankzij onze drie overladen operators accepteert de compiler onze eigen class in de range-based loop:
+
+```cpp
+int main() {
+    IntVerzameling verzameling;
+
+    for (int getal : verzameling) {
+        std::cout << getal << " "; // 10 20 30 40 50
+    }
+    return 0;
+}
+
+```
+
+---
+
+### Samenvatting
+
+* Iterators bootsen pointers na (`*it`, `++it`, `!=`).
+* Ze ontkoppelen algoritmen van data-containers.
+* Pas op met `erase`/`push_back` tijdens het itereren (*invalidation*).
+* Een iterator is niets meer dan een vederlicht object dat een pointer inpakt.
+
+
+
+
+
+  </script>
+</section>
+</div></div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/zoom/zoom.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/search/search.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script>
+
+			// Also available as an ES module, see:
+			// https://revealjs.com/initialization/
+			Reveal.initialize({
+				width: 1200,
+				controls: true,
+				progress: true,
+				center: true,
+				hash: true,
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealZoom, RevealNotes, RevealSearch, RevealMarkdown, RevealHighlight ]
+			});
+
+		</script>
+</body>
+
+</Html>

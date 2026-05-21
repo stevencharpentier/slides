@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>IT&IMT - Welkom bij C++ programmeren</title>
+
+		<meta name="description" content="IT&IMT - C++ programmeren">
+		<meta name="author" content="Steven Charpentier">
+
+		<meta name="apple-mobile-web-app-capable" content="no">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/dracula.css" id="theme">
+		
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+		<!--
+		
+		<link rel="stylesheet" href="APstyle.css"> 
+
+		<link rel="stylesheet" href="plugin/highlight/github-dark.css">
+
+		-->
+
+
+	</head>
+
+	<body>
+		<div class="reveal">
+            <div class="slides">
+    <section data-markdown>
+  <script type="text/template">
+# 🎓 Hoofdstuk 22: File I/O
+## Permanente Opslag in C++
+
+---
+
+### Waarom File I/O?
+
+*   Data in RAM-geheugen is vluchtig.
+*   Zodra het programma sluit, ben je alle variabelen en scores kwijt.
+*   **Doel:** Data permanent bewaren op harde schijf of SSD (configuraties, logs, savegames).
+*   Focus van dit semester: Platte tekstbestanden via de C++ Standard Library (`<fstream>`).
+
+---
+
+### 22.1 Het Concept van een 'Stream'
+
+C++ behandelt invoer en uitvoer als een datastroom (stream).
+
+*   `std::cout`: *Output stream* richting de terminal.
+*   `std::cin`: *Input stream* vanaf het toetsenbord.
+
+Voor bestanden gebruiken we `<fstream>`:
+*   **`std::ofstream`** (Output File Stream): Schrijven *naar* een bestand.
+*   **`std::ifstream`** (Input File Stream): Lezen *uit* een bestand.
+
+---
+
+### 22.2 Data Wegschrijven (Het Proces)
+
+Het schrijven naar een bestand volgt altijd een vast patroon:
+
+1.  **Openen:** Een `std::ofstream` object declareren met de bestandsnaam.
+2.  **Controleren:** Checken of het openen is gelukt via `.is_open()`.
+3.  **Schrijven:** Data in de stream duwen met de `<<` operator.
+4.  **Sluiten:** Het bestand netjes vrijgeven via `.close()`.
+
+---
+
+### Codevoorbeeld: Schrijven
+
+```cpp
+#include <iostream>
+#include <fstream> 
+
+int main() {
+    std::ofstream uitBestand("highscore.txt");
+
+    if (uitBestand.is_open()) {
+        uitBestand << "Player1\n";
+        uitBestand << 15500 << "\n";
+        uitBestand.close(); 
+        std::cout << "Succesvol opgeslagen.\n";
+    } else {
+        std::cerr << "Fout bij openen!\n";
+    }
+    return 0;
+}
+
+```
+
+---
+
+### Open Modes: Truncate vs Append
+
+Hoe moet C++ omgaan met een bestand dat al bestaat?
+
+* **Truncate (`std::ios::trunc`) - Standaard**
+De oude inhoud van het bestand wordt onmiddellijk volledig gewist (overschreven).
+* **Append (`std::ios::app`)**
+De oude inhoud blijft behouden; nieuwe data wordt er achteraan geplakt.
+
+```cpp
+// Openen in append-modus
+std::ofstream logBestand("log.txt", std::ios::app);
+
+```
+
+---
+
+### 22.3 Data Inlezen met `std::ifstream`
+
+* Bij inlezen moeten we controleren wanneer we het einde van het bestand (EOF) bereiken.
+* De meest robuuste manier om regel voor regel te lezen is met `std::getline()`.
+
+---
+
+### Codevoorbeeld: Lezen
+
+```cpp
+#include <iostream>
+#include <fstream>
+#include <string>
+
+int main() {
+    std::ifstream inBestand("highscore.txt");
+    std::string regel;
+
+    if (inBestand.is_open()) {
+        // Stopt automatisch zodra het bestand leeg is
+        while (std::getline(inBestand, regel)) {
+            std::cout << "Regel: " << regel << "\n";
+        }
+        inBestand.close();
+    }
+    return 0;
+}
+
+```
+
+---
+
+### Waarom werkt `while(getline)`?
+
+* `std::getline()` leest de regel én geeft de status van de stream terug.
+* Zodra de finishlijn (End of File) is bereikt, springt de stream-status op 'faal'.
+* De `while`-loop ziet dit als `false` en stopt direct.
+* Dit voorkomt dat je per ongeluk voorbij het einde van het bestand doorleest.
+
+---
+
+### 22.4 Buffers en Geheugenbeheer
+
+* Schrijven naar een schijf of SSD is duizenden keren trager dan schrijven naar RAM.
+* `<fstream>` parkeert data daarom eerst in een tijdelijke **RAM-buffer**.
+* Pas als de buffer vol is, wordt de data in één keer naar de schijf geschreven (**flushen**).
+
+---
+
+### Hoe dwing je een flush af?
+
+1. **`std::endl`**: Voegt een `\n` toe én flusht de buffer direct. (Trager in grote loops!).
+2. **`stream.flush()`**: Flusht de buffer handmatig, zonder newline.
+3. **`stream.close()`**: Sluit het bestand en loost automatisch de laatste restjes buffer naar de schijf.
+
+> **Gevaar:** Als je programma onverwacht crasht *voordat* de buffer is geflusht of gesloten, gaat de data in de buffer onherroepelijk verloren.
+
+---
+
+### File Pointers (Bladwijzers)
+
+Streams houden intern een teller (bookmark) bij om te weten waar ze zijn:
+
+* **`tellg()` / `tellp()**`
+Vraagt de huidige positie op (in bytes vanaf het begin) van de lees- (g) of schrijfpointer (p).
+* **`seekg()` / `seekp()**`
+Verplaatst de lees- of schrijfpointer handmatig naar een specifieke byte (bijv. spring direct naar byte 50).
+
+---
+
+### 22.5 Het OS en File Locking
+
+* C++ vraagt bestandstoegang aan het OS via een *system call* en krijgt een *file handle* terug.
+* De standaard C++ library regelt zelf **geen** exclusieve vergrendeling (*file locking*):
+* **Windows:** Blokkeert andere programma's vaak automatisch als een bestand openstaat in een output stream.
+* **Linux:** Laat andere processen het bestand vaak ijskoud tegelijkertijd openen of overschrijven.
+
+
+
+---
+
+### Het Risico: Race Conditions
+
+* Als twee processen (of threads) tegelijkertijd naar hetzelfde bestand schrijven, worden hun buffers door elkaar geflusht.
+* **Gevolg:** Een corrupt en onleesbaar bestand.
+* Exclusieve locking vereist OS-specifieke API's (`LockFileEx` op Windows, `flock()` op Linux) of externe libraries.
+
+---
+
+### 22.6 RAII: Automatisch Sluiten
+
+* In C++ zijn resources gekoppeld aan de levensduur van het object op de Stack (**RAII**).
+* Wanneer een file stream buiten zijn **scope** (de accolades `{ }`) raakt, wordt de *destructor* aangeroepen.
+* De destructor roept automatisch `.close()` aan. Handmatig sluiten is aan het einde van een scope dus optioneel.
+
+---
+
+### Valkuil 1: Te Grote Scope
+
+Als een functie na het schrijven nog minutenlang zware berekeningen doet, blijft het bestand onnodig lang bezet voor het OS.
+
+**Oplossing: Een kunstmatige scope**
+
+```cpp
+void verwerkData() {
+    { // Start extra scope
+        std::ofstream schrijver("config.txt");
+        schrijver << "Theme=Dark\n";
+    } // schrijver sterft HIER -> bestand sluit direct
+
+    // Bestand is al dicht tijdens deze lange berekening:
+    zwareBerekening(); 
+}
+
+```
+
+---
+
+### Valkuil 2: Dynamisch Geheugen
+
+Als je een stream handmatig op de Heap aanmaakt met `new` en je vergeet `delete`, treedt er een lek op. De destructor wordt nooit geactiveerd en het bestand blijft openstaan.
+
+```cpp
+// GEVAARLIJK: Lekt de file handle bij het vergeten van delete
+std::ofstream* lekStream = new std::ofstream("data.txt");
+*lekStream << "Data\n";
+
+```
+
+ Maak streams altijd aan als gewone variabelen op de Stack en vertrouw op de accolades.
+
+```
+
+
+
+
+
+  </script>
+</section>
+</div></div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/zoom/zoom.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/search/search.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script>
+
+			// Also available as an ES module, see:
+			// https://revealjs.com/initialization/
+			Reveal.initialize({
+				width: 1200,
+				controls: true,
+				progress: true,
+				center: true,
+				hash: true,
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealZoom, RevealNotes, RevealSearch, RevealMarkdown, RevealHighlight ]
+			});
+
+		</script>
+</body>
+
+</Html>
